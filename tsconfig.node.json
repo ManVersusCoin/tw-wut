@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "CommonJS", // <-- ici CommonJS
+    "esModuleInterop": true,
+    "strict": true,
+    "types": [ "node" ],
+    "skipLibCheck": true
+  },
+  "include": [ "scripts/**/*.ts" ]
+}
