@@ -9,3 +9,4 @@ export const fmtPrice = (n?: number) => n ? "$" + n.toFixed(4) : "-";
 export const fmtNum = (n?: number, decimals: number = 0, notation: IntlNotation = "compact") => n ? new Intl.NumberFormat('en-US', { maximumFractionDigits: decimals, notation: notation }).format(n) : "-";
 export const fmtEth = (n?: number, decimals: number = 3) => n ? `Ξ${n.toLocaleString('en-US', { maximumFractionDigits: decimals })}` : "-";
 export const fmtPercent = (p: string) => parseFloat(p).toFixed(2);
+export const fmtToken = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 0 });

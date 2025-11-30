@@ -8,13 +8,14 @@ import {
     Flame,
     Trophy,
     Activity,
-    Coins, TrendingUp, TrendingDown
+    Coins, TrendingUp, TrendingDown, EllipsisVertical
     
 } from "lucide-react";
 import { MarketDepthVisualizer } from "./MarketDepthVisualizer";
 import { NFTActivityBlock } from './NFTActivityBlock';
 import { TreasuryBlock } from './TreasuryBlock';
 import { HoldersOverview } from './HoldersOverview';
+import { MarketSimulator } from './MarketSimulator';
 // Utilities (fmtEth, fmtPrice, fmtUSD, etc.)
 import { fmtEth, fmtUSD, fmtPrice, fmtNum } from "../utils/format";
 
@@ -134,7 +135,7 @@ export default function StrategyDetailView({
     const [bestNftImage, setBestNftImage] = useState<string | null | undefined>(
         undefined
     );
-
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     useEffect(() => {
         if (!metrics.bestPnL?.tokenId || !strategy.collection) {
             setBestNftImage(undefined);
@@ -200,17 +201,74 @@ export default function StrategyDetailView({
             {/* 1. Identity */ }
             < div className = "bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between" >
                     <div className="flex items-start gap-4">
-                        <img src={strategy.collectionImage} className="w-16 h-16 rounded-xl object-cover border-2 border-gray-100 dark:border-gray-700 shadow-md" />
-                        <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{strategy.tokenName}</h1>
-                                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-bold border border-blue-200 dark:border-blue-800">{strategy.tokenSymbol}</span>
+                        <img
+                            src={strategy.collectionImage}
+                            className="w-16 h-16 rounded-xl object-cover border-2 border-gray-100 dark:border-gray-700 shadow-md"
+                        />
+
+                        <div className="flex-grow">
+
+                            {/* 1. Ligne du Titre, Symbole ET Bouton '...' (utilisant justify-between) */}
+                            <div className="flex justify-between items-start mb-1">
+
+                                {/* Groupe de gauche : Titre et Symbole */}
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{strategy.tokenName}</h1>
+                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-bold border border-blue-200 dark:border-blue-800">{strategy.tokenSymbol}</span>
+                                </div>
+
+                                {/* Groupe de droite : Bouton '...' et Dropdown (Positionnement relatif) */}
+                                <div className="relative z-10">
+                                    <button
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300"
+                                        aria-expanded={isDropdownOpen}
+                                    >
+                                        <EllipsisVertical size={20} />
+                                    </button>
+
+                                    {/* Contenu de la liste déroulante */}
+                                    {isDropdownOpen && (
+                                        <div
+                                            // CLÉ : 'right-0' pour aligner la liste à droite du bouton
+                                            className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-20 p-1 origin-top-right animate-in fade-in zoom-in-95 duration-200"
+                                            onMouseLeave={() => setIsDropdownOpen(false)}
+                                        >
+                                            {/* Lien 1 */}
+                                            <a
+                                                href={`https://nftstrategy.fun/strategies/${strategy.tokenAddress}`}
+                                                target="_blank"
+                                                className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
+                                            >
+                                                <Globe size={16} /> Strategy Page
+                                            </a>
+
+                                            {/* Lien 2 */}
+                                            <a
+                                                href={`https://etherscan.io/address/${strategy.tokenAddress}`}
+                                                target="_blank"
+                                                className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
+                                            >
+                                                <FileText size={16} /> Etherscan
+                                            </a>
+
+                                            {/* Lien 3 (Optionnel) */}
+                                            {strategy.collectionOsSlug && (
+                                                <a
+                                                    href={`https://opensea.io/collection/${strategy.collectionOsSlug}`}
+                                                    target="_blank"
+                                                    className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
+                                                >
+                                                    <Anchor size={16} /> OpenSea
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div className="flex gap-3 mt-2">
-                                <a href={`https://nftstrategy.fun/strategies/${strategy.tokenAddress}`} target="_blank" className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"><Globe size={12} /> Strategy Page</a>
-                                <a href={`https://etherscan.io/address/${strategy.tokenAddress}`} target="_blank" className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors"><FileText size={12} /> Etherscan </a>
-                                {strategy.collectionOsSlug && <a href={`https://opensea.io/collection/${strategy.collectionOsSlug}`} target="_blank" className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"><Anchor size={12} /> OpenSea</a>}
-                            </div>
+
+                            {/* 2. Vous pouvez ajouter ici d'autres éléments qui devaient se trouver en dessous du titre */}
+
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 mt-6">
@@ -362,17 +420,24 @@ export default function StrategyDetailView({
 </div>
 
             {/* NEW SECTION 1: MARKET STATS & FEES */}
-            
-            <div className= "grid grid-cols-1 gap-6 mb-6" >
-                <div className="flex flex-col justify-between">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+
+                {/* Left Side: Chart (Takes up 2 columns on large screens) */}
+                <div className="xl:col-span-2">
                     <MarketDepthVisualizer
                         market_depth_data={strategy.market_depth_data}
                         marketDepthKPIs={strategy.marketDepthKPIs}
                         tokenPriceUsd={parseFloat(strategy.poolData?.price_usd || '0')}
                     />
                 </div>
-                
-            </div >
+                <div className="xl:col-span-1 min-h-[600px]">
+                    <MarketSimulator
+                        listings={strategy.market_depth_data}
+                        poolData={strategy.poolDataExt}
+                        tokenSymbol={strategy.tokenSymbol}
+                    />
+                </div>
+                </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="flex flex-col h-full">
                     <NFTActivityBlock strategy={strategy} />

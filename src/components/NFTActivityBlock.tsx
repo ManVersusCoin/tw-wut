@@ -59,7 +59,7 @@ export const NFTActivityBlock: React.FC<ActivityBlockProps> = ({
                     <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase flex items-center gap-2 mb-4">
                         <Zap size={16} className="text-amber-500" /> Strategy NFT Activity
                     </h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* 24h Flow */}
                         <div className="bg-gray-50 dark:bg-gray-800/40 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
                             <div className="flex justify-between items-center mb-2">
@@ -117,7 +117,7 @@ export const NFTActivityBlock: React.FC<ActivityBlockProps> = ({
                         <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase flex items-center gap-2 mb-4">
                             <Globe size={16} className="text-blue-500" /> OpenSea Collection Activity
                         </h4>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-4">
                             {/* 24h OS Activity */}
                             <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-lg p-4 border border-blue-100 dark:border-blue-900/30">
                                 <div className="flex justify-between items-center mb-2">

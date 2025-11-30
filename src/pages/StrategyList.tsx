@@ -5,12 +5,12 @@ import {
     TrendingUp, TrendingDown, Loader2, Flame,
     Filter, Columns, ArrowUpDown, Check,  ChevronRight, ChevronLeft,
     X, Users,
-    Search, EyeOff, Eye, PanelLeftClose, PieChart, Info,
+    Search, EyeOff, Eye, PanelLeftClose, PieChart, 
     Maximize2,
     Globe, FileText, Anchor, 
 } from "lucide-react";
 // Assumes you have these components/utils available in your project
-
+import { fmtPercent} from '../utils/format';
 import { Tooltip } from "../components/Tooltip";
 import { EN_COLUMN_DESCRIPTIONS } from '../utils/enColumnDescriptions';
 //import { formatTooltip } from '../utils/tooltipUtils';
@@ -89,7 +89,7 @@ type ColumnId =
     | "feesStrat" | "feesPnkstr" | "feesRoyalties"
     | "nftFloor" | "nftMcap" | "nftHolders"
     | "ecoToken" | "ecoMcap" | "ecoHolders"
-    | "ecoColRatio" | "marketDepthKPIs" | "navRatio" | "ecoColHolderRatio" | "ecoStratHolderRatio" | "stratColHolderRatio"
+    | "ecoColRatio" | "marketDepthKPIs" | "spread" | "navRatio" | "ecoColHolderRatio" | "ecoStratHolderRatio" | "stratColHolderRatio"
     | "actions";
 
 const COLUMN_DEFS: { id: ColumnId; label: string; align: "left" | "right" | "center"; headerGroup?: string; width?: string }[] = [
@@ -116,6 +116,7 @@ const COLUMN_DEFS: { id: ColumnId; label: string; align: "left" | "right" | "cen
     { id: "ecoHolders", label: "Eco Holders", align: "center", headerGroup: "Ecosystem Token" },
     { id: "ecoColRatio", label: "Eco/Col %", align: "right", headerGroup: "KPI / Ratio" },
     { id: "marketDepthKPIs", label: "Dominance/Wall", align: "right", headerGroup: "KPI / Ratio" },
+    { id: "spread", label: "Spread", align: "right", headerGroup: "KPI / Ratio" },
     { id: "navRatio", label: "NAV Ratio", align: "right", headerGroup: "KPI / Ratio" },
     { id: "ecoColHolderRatio", label: "Eco/Col Holders %", align: "right", headerGroup: "KPI / Ratio" },
     { id: "ecoStratHolderRatio", label: "Eco/Strat Holders %", align: "right", headerGroup: "KPI / Ratio" },
@@ -124,7 +125,7 @@ const COLUMN_DEFS: { id: ColumnId; label: string; align: "left" | "right" | "cen
 ];
 
 const DEFAULT_VISIBLE_SET = new Set<ColumnId>([
-    "strategy", "price", "priceChange24h", "stratMcap", "treasury", "currentBalance", "marketDepthKPIs", "navRatio", "actions"
+    "strategy", "price", "priceChange24h", "stratMcap", "treasury", "currentBalance", "marketDepthKPIs", "spread", "navRatio", "actions"
 ]);
 
 const GROUP_BG_STYLES: Record<string, string> = {
@@ -165,15 +166,34 @@ const getSortValue = (s: StrategyData, key: ColumnId): number | string => {
         case "ecoToken": return s.ecoTicker || "";
         case "ecoMcap": return s.ecoMarketCapUsd || 0;
         case "ecoHolders": return s.ecoHolders || 0;
-        case "marketDepthKPIs": return s.marketDepthKPIs?.dominanceVolumeEth || (0 - s.marketDepthKPIs?.wallVolumeEth) || 0;
+
+        case "marketDepthKPIs": {
+            const kpi = s.marketDepthKPIs;
+            if (!kpi) return 0;
+
+            if (kpi.dominanceVolumeEth != null) return kpi.dominanceVolumeEth;
+            if (kpi.wallVolumeEth != null) return -kpi.wallVolumeEth;
+
+            return 0;
+        }
+        case "spread": {
+            const spread = s.marketDepthKPIs?.spreadPercent;
+            const isInvalid =
+                spread == null || Math.abs(spread) === 100;
+
+            return isInvalid ? Number.POSITIVE_INFINITY : spread;
+        }
+
         case "ecoColRatio": return s.ecoColRatio || 0;
         case "navRatio": return s.navRatio || 0;
         case "ecoColHolderRatio": return s.ecoColHolderRatio || 0;
         case "ecoStratHolderRatio": return s.ecoStratHolderRatio || 0;
         case "stratColHolderRatio": return s.stratColHolderRatio || 0;
+
         default: return 0;
     }
 };
+
 const getInitialVisibleColumns = (): Set<ColumnId> => {
     try {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -203,7 +223,7 @@ export default function StrategyDashboard(): JSX.Element {
     const [globalLoading, setGlobalLoading] = useState<boolean>(true);
     const [statusMessage, setStatusMessage] = useState<string>("Initializing...");
     const [activePanel, setActivePanel] = useState<"strategies" | "columns" | null>(null);
-    const [showInfoModal, setShowInfoModal] = useState(false);
+    
     const [visibleStrategyIds, setVisibleStrategyIds] = useState<Set<string>>(new Set());
     const [sortConfig, setSortConfig] = useState<{ key: ColumnId; direction: "asc" | "desc" } | null>(null);
     const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -275,7 +295,7 @@ export default function StrategyDashboard(): JSX.Element {
         <div className="absolute inset-0 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950 font-sans z-10">
             <ScrollbarStyles />
             <HolderDistributionModal isOpen={!!selectedHolderDist} onClose={() => setSelectedHolderDist(null)} tokenSymbol={selectedHolderDist?.symbol || ""} data={selectedHolderDist?.data} />
-            <InfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
+            
 
             <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex justify-between items-center shrink-0 z-50">
 
@@ -318,12 +338,7 @@ export default function StrategyDashboard(): JSX.Element {
 
                 {/* RIGHT SIDE */}
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setShowInfoModal(true)}
-                        className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-blue-600 transition-colors"
-                    >
-                        <Info size={20} />
-                    </button>
+                    
 
                     <button
                         id="btn-strategies"
@@ -565,7 +580,20 @@ export default function StrategyDashboard(): JSX.Element {
                                                                 </div>
                                                             </div>
                                                         )}
-
+                                                    {col.id === "spread" && (
+                                                        <div className="flex flex-col items-end">
+                                                            <div
+                                                                className={`font-bold font-mono ${s.marketDepthKPIs?.isLeading
+                                                                        ? "text-emerald-600 dark:text-emerald-400"
+                                                                        : "text-amber-600 dark:text-amber-400"
+                                                                    }`}
+                                                            >
+                                                                {s.marketDepthKPIs?.spreadPercent != null && Math.abs(s.marketDepthKPIs?.spreadPercent) !== 100
+                                                                    ? `${fmtPercent(s.marketDepthKPIs.spreadPercent)}%`
+                                                                    : "-"}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                         {(col.id === "feesStrat" || col.id === "feesPnkstr" || col.id === "feesRoyalties") && (
                                                             <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">{fmtEth(s[col.id])}</span>
                                                         )}
@@ -657,23 +685,6 @@ const ScrollbarStyles = () => (
         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
     `}} />
 );
-
-function InfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-gray-200 dark:border-gray-800" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-800">
-                    <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-white"><Info size={24} className="text-blue-600" /> Dashboard Docs</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"><X size={20} /></button>
-                </div>
-                <div className="overflow-y-auto flex-1 p-6 custom-scrollbar text-gray-700 dark:text-gray-300 space-y-4 text-sm">
-                    <p>Monitor real-time metrics for TokenWorks Strategies.</p>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 function RightPanel({
     mode, onClose, strategies, visibleStrategyIds, toggleStrategy,

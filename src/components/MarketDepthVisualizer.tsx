@@ -1,6 +1,6 @@
 ﻿import React, { useMemo, useState } from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Line
 } from 'recharts';
 import { ArrowUp, Layers, Flame, Crown, Zap } from 'lucide-react';
 
@@ -80,6 +80,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
             end: number;
             Strategy: number;
             OpenSea: number;
+            BucketVolumeEth: number;
         }> = [];
 
         let current = displayMin;
@@ -97,7 +98,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
             const inRange = listings.filter(l => l.price >= current && l.price < next);
             const strategyCount = inRange.filter(l => l.source === 'strategy').length;
             const osCount = inRange.filter(l => l.source === 'opensea').length;
-
+            const bucketVolumeEth = inRange.reduce((sum, l) => sum + l.price, 0); 
             const label = `${current.toFixed(3)}–${next.toFixed(3)}`;
 
             if (strategyCount > 0 || osCount > 0) {
@@ -106,7 +107,8 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                     start: current,
                     end: next,
                     Strategy: strategyCount,
-                    OpenSea: osCount
+                    OpenSea: osCount,
+                    BucketVolumeEth: bucketVolumeEth
                 });
             }
 
@@ -119,11 +121,21 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                 start: displayMin,
                 end: displayMax,
                 Strategy: listings.filter(l => l.source === 'strategy').length,
-                OpenSea: listings.filter(l => l.source === 'opensea').length
+                OpenSea: listings.filter(l => l.source === 'opensea').length,
+                BucketVolumeEth: listings.reduce((sum, l) => sum + l.price, 0)
             });
         }
+        // Cumulative Volume Calculation
+        let cumulativeVolume = 0;
+        const finalChartData = buckets.map(b => {
+            cumulativeVolume += b.BucketVolumeEth;
+            return {
+                ...b,
+                CumulativeVolume: cumulativeVolume // Key for the line
+            };
+        });
 
-        return buckets;
+        return finalChartData;
     }, [listings, stepPercent, kpis]);
 
     const floorBucketLabel = useMemo(() => {
@@ -140,18 +152,26 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
             const start = parseFloat(startStr || '0');
             const end = parseFloat(endStr || '0');
 
+            // Search for cumulative volume data (yAxisId="volume")
+            const cumulativeEntry = payload.find((p: any) => p.dataKey === 'CumulativeVolume');
+
             return (
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg shadow-xl text-sm">
                     <div className="font-bold mb-2">Range: {label} ETH</div>
                     <div className="text-xs text-gray-500 mb-2">
                         Price {start.toFixed(3)} → {end.toFixed(3)}
                     </div>
-                    {payload.map((entry: any) => (
+                    {payload.filter((p: any) => p.dataKey !== 'CumulativeVolume').map((entry: any) => (
                         <div key={entry.name} className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                            <span>{entry.name}: <strong>{entry.value}</strong></span>
+                            <span>{entry.name}: <strong>{entry.value}</strong> listings</span>
                         </div>
                     ))}
+                    {cumulativeEntry && (
+                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 font-semibold text-purple-500">
+                            Sweep Vol.: {cumulativeEntry.value.toFixed(3)} ETH
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -267,10 +287,38 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                         <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.3} />
                         <XAxis dataKey="label" label={{ value: 'Price Range (ETH)', position: 'insideBottom', offset: -10 }} tick={{ fontSize: 12 }} />
                         <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                        {/* Right Y-Axis (Cumulative Volume) */}
+                        <YAxis
+                            yAxisId="volume"
+                            orientation="right"
+                            stroke="#8884d8" // Color to match the line
+                            tick={{ fontSize: 12, fill: '#8884d8' }}
+                            tickFormatter={(value: number) => `${value.toFixed(1)}`}
+                            label={{ value: 'Vol. (ETH)', angle: 90, position: 'insideRight', offset: 10, fill: '#8884d8' }}
+                        />
+                        {/* Right Y-Axis (Cumulative Volume) */}
+                        <YAxis
+                            yAxisId="volume"
+                            orientation="right"
+                            stroke="#8884d8" // Color to match the line
+                            tick={{ fontSize: 12, fill: '#8884d8' }}
+                            tickFormatter={(value: number) => `${value.toFixed(1)}`}
+                            label={{ value: 'Vol. (ETH)', angle: 90, position: 'insideRight', offset: 10, fill: '#8884d8' }}
+                        />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend verticalAlign="top" height={36} />
                         <Bar dataKey="OpenSea" stackId="a" fill="#3B82F6" name="OpenSea" />
                         <Bar dataKey="Strategy" stackId="a" fill="#10B981" name="Strategy" />
+                        <Line
+                            type="monotone"
+                            dataKey="CumulativeVolume"
+                            stroke="#8884d8"
+                            strokeWidth={2}
+                            dot={false}
+                            yAxisId="volume"
+                            name="Vol. (ETH)"
+                            isAnimationActive={false} // Optional: disable animation for this line
+                        />
                         {floorBucketLabel && (
                             <ReferenceLine
                                 x={floorBucketLabel}
