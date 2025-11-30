@@ -18,6 +18,7 @@ import { HoldersOverview } from './HoldersOverview';
 import { MarketSimulator } from './MarketSimulator';
 // Utilities (fmtEth, fmtPrice, fmtUSD, etc.)
 import { fmtEth, fmtUSD, fmtPrice, fmtNum } from "../utils/format";
+import { useNavigate } from "react-router-dom";
 
 const PROXY = import.meta.env.VITE_TW_PROXY_URL || "";
 
@@ -25,15 +26,17 @@ export default function StrategyDetailView({
     strategy: initialStrategy,
     allStrategies = [],
     ethPrice,
-    onSwitch,
-    onBack
+    onSwitch
 }: {
     strategy: any;
     allStrategies?: any[];
     ethPrice: number;
     onSwitch?: (id: string) => void;
-    onBack?: () => void;
-}) {
+    
+    }) {
+    const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
     /* ----------------------------------------------------------
        1) Normalisation et parsing du JSON
     ---------------------------------------------------------- */
@@ -161,37 +164,77 @@ export default function StrategyDetailView({
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 pb-20 h-full overflow-y-auto custom-scrollbar bg-gray-50 dark:bg-gray-900 p-6">
             {/* HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 sticky top-0 bg-gray-50/95 dark:bg-gray-900 backdrop-blur z-50 py-2 border-b border-gray-200 dark:border-gray-800">
-                {onBack && (
-                    <button
-                        onClick={onBack}
-                        className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
-                    >
-                        <ArrowLeft size={20} /> Back
-                    </button>
-                )}
-
+                {/* Back button */}
+                <button
+                    onClick={() => navigate("/")}
+                    className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
+                >
+                    <ArrowLeft size={20} /> Back to List
+                </button>
                 {onSwitch && allStrategies.length > 0 && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-row  justify-between items-center gap-2 relative">
                         <span className="text-sm text-gray-500">Strategy:</span>
-                        <div className="relative group">
-                            <select
-                                value={strategy.id}
-                                onChange={(e) => onSwitch(e.target.value)}
-                                className="appearance-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-2 pl-4 pr-10 font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+
+                        <div className="relative w-64">
+                            {/* Input simulant le select */}
+                            <button
+                                onClick={() => setOpen(!open)}
+                                className="w-full flex items-center justify-between bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg py-2 px-3 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                {allStrategies.map((s) => (
-                                    <option key={s.id} value={s.id}>
-                                        {s.tokenSymbol}
-                                    </option>
-                                ))}
-                            </select>
-                            <ChevronDown
-                                size={16}
-                                className="absolute right-3 top-3 text-gray-400 pointer-events-none"
-                            />
+                                <div className="flex items-center gap-2">
+                                    {strategy?.collectionImage && (
+                                        <img
+                                            src={strategy.collectionImage}
+                                            alt=""
+                                            className="w-5 h-5 rounded-full object-cover"
+                                        />
+                                    )}
+                                    <span>{strategy?.tokenSymbol}</span>
+                                </div>
+                                <ChevronDown size={16} className="text-gray-400" />
+                            </button>
+
+                            {/* Dropdown */}
+                            {open && (
+                                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+
+                                    {/* Search */}
+                                    <div className="p-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Search..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full px-2 py-1 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        />
+                                    </div>
+
+                                    {/* Options */}
+                                    {allStrategies
+                                        .filter(s => s.tokenSymbol.toLowerCase().includes(searchTerm.toLowerCase()))
+                                        .map((s) => (
+                                            <div
+                                                key={s.id}
+                                                onClick={() => {
+                                                    onSwitch(s.id);
+                                                    setOpen(false);
+                                                }}
+                                                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                            >
+                                                <img
+                                                    src={s.collectionImage}
+                                                    alt=""
+                                                    className="w-5 h-5 rounded-full object-cover"
+                                                />
+                                                <span className="truncate">{s.tokenSymbol}</span>
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
+
             </div>
 
 
