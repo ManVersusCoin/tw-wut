@@ -41,7 +41,6 @@ export default function StrategyPage() {
                 
                 window.location.href = `/strategy/${id}`;
             }}
-            onBack={() => window.history.back()}
         />
     );
 }
