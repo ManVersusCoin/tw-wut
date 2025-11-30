@@ -224,9 +224,7 @@ export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
             <div className="p-6 flex-1 flex flex-col gap-6 overflow-y-auto">
                 {/* Input */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Injection Amount
-                    </label>
+                    
                     <div className="relative flex rounded-xl shadow-sm">
 
                         {/* Champ de saisie MODIFIÉ POUR SUPPRIMER LES FLÈCHES */}

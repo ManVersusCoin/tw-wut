@@ -148,28 +148,58 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
-            const [startStr, endStr] = (label || '').split('–');
-            const start = parseFloat(startStr || '0');
-            const end = parseFloat(endStr || '0');
+            
+            
 
-            // Search for cumulative volume data (yAxisId="volume")
-            const cumulativeEntry = payload.find((p: any) => p.dataKey === 'CumulativeVolume');
+            const bucketEntry = payload[0]?.payload; // bucket correspondant
+            if (!bucketEntry) return null;
+
+            // Cumulatif jusqu'à ce bucket
+            const index = chartData.findIndex(b => b.label === bucketEntry.label);
+            const cumulativeStrategy = chartData
+                .slice(0, index + 1)
+                .reduce((sum, b) => sum + (b.Strategy || 0), 0);
+            const cumulativeOpenSea = chartData
+                .slice(0, index + 1)
+                .reduce((sum, b) => sum + (b.OpenSea || 0), 0);
+            const cumulativeTotal = cumulativeStrategy + cumulativeOpenSea;
+
+            // Cumulative Volume
+            const cumulativeVolumeEntry = payload.find((p: any) => p.dataKey === 'CumulativeVolume');
 
             return (
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg shadow-xl text-sm">
                     <div className="font-bold mb-2">Range: {label} ETH</div>
-                    <div className="text-xs text-gray-500 mb-2">
-                        Price {start.toFixed(3)} → {end.toFixed(3)}
-                    </div>
+                    
+
+                    {/* Individual bucket listings */}
                     {payload.filter((p: any) => p.dataKey !== 'CumulativeVolume').map((entry: any) => (
                         <div key={entry.name} className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
                             <span>{entry.name}: <strong>{entry.value}</strong> listings</span>
                         </div>
                     ))}
-                    {cumulativeEntry && (
+
+                    {/* Cumulative listings */}
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-sm space-y-1">
+                        <div className="text-xs text-gray-500 mb-1">Cumulative Listings:</div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500" />
+                            <span>Strategy NFTs: <strong>{cumulativeStrategy}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500" />
+                            <span>OpenSea NFTs: <strong>{cumulativeOpenSea}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2 font-semibold">
+                            <div className="w-3 h-3 rounded-full bg-purple-500" />
+                            <span>Total NFTs: {cumulativeTotal}</span>
+                        </div>
+                    </div>
+
+                    {cumulativeVolumeEntry && (
                         <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 font-semibold text-purple-500">
-                            Sweep Vol.: {cumulativeEntry.value.toFixed(3)} ETH
+                            Sweep Vol.: {cumulativeVolumeEntry.value.toFixed(3)} ETH
                         </div>
                     )}
                 </div>
@@ -177,6 +207,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
         }
         return null;
     };
+
 
     if (!kpis || listings.length === 0) {
         return (
