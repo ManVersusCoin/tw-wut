@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 // Importation de tes utilitaires
-import { fmtUSD, fmtNum, fmtPercent } from '../utils/format';
+import { fmtUSD, fmtNum, fmtPercent, fmtEth } from '../utils/format';
 
 // --- Constantes d'API ---
 const PROXY = import.meta.env.VITE_TW_WUT_URL;
@@ -265,7 +265,16 @@ const MetricsPage = () => {
                         valueLabel={(_: any, val: number) => getShareOfTotal(val, totals.mcap)}
                         color="green"
                     />
-
+                    <RankingWidget
+                        title="NFT Buys (24h)"
+                        icon={Activity}
+                        data={strategiesData}
+                        getValue={(item: any) => parseFloat(item.stratBuy24h || 0)}
+                        formatValue={(val: number) => fmtNum(val)}
+                        // Fonction dynamique
+                        valueLabel={(item: any) => fmtEth(item.stratBuy24hVol)}
+                        color="purple"
+                    />
                     {/* Widget 3: Best 24h Volume -> Affiche % du Total */}
                     <RankingWidget
                         title="Top Volume (24h)"
