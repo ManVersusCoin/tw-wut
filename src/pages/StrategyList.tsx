@@ -58,6 +58,8 @@ export type StrategyData = {
     currentBalanceEth: number;
     buyVolume: number;
     saleVolume: number;
+    stratSell24hVol: number;
+    stratBuy24hVol: number;
     buyCount: number;
     saleCount: number;
     realizedPnLEth: number;
@@ -86,7 +88,7 @@ export type StrategyData = {
 // --- 3. COLUMNS DEFINITION ---
 type ColumnId =
     | "strategy" | "price" | "priceChange24h" | "volume24h" | "stratMcap" | "burn" | "stratHolders"
-    | "treasury" | "currentBalance" | "buyVolume" | "saleVolume" | "realizedPnL"
+    | "treasury" | "currentBalance" | "buyVolume" | "saleVolume" | "realizedPnL" | "stratSell24hVol" | "stratBuy24hVol"
     | "feesStrat" | "feesPnkstr" | "feesRoyalties"
     | "nftFloor" | "nftMcap" | "nftHolders"
     | "ecoToken" | "ecoMcap" | "ecoHolders"
@@ -106,6 +108,8 @@ const COLUMN_DEFS: { id: ColumnId; label: string; align: "left" | "right" | "cen
     { id: "buyVolume", label: "Buy Vol (Ξ)", align: "right", headerGroup: "Trades & Holdings" },
     { id: "saleVolume", label: "Sale Vol (Ξ)", align: "right", headerGroup: "Trades & Holdings" },
     { id: "realizedPnL", label: "Realized P&L", align: "right", headerGroup: "Trades & Holdings" },
+    { id: "stratSell24hVol", label: "Sale Vol (24h)", align: "right", headerGroup: "Trades & Holdings" },
+    { id: "stratBuy24hVol", label: "Buy Vol (24h)", align: "right", headerGroup: "Trades & Holdings" },
     { id: "feesStrat", label: "Strat (8%)", align: "right", headerGroup: "Fees" },
     { id: "feesPnkstr", label: "PNKSTR (1%)", align: "right", headerGroup: "Fees" },
     { id: "feesRoyalties", label: "Royalties (1%)", align: "right", headerGroup: "Fees" },
@@ -154,6 +158,8 @@ const getSortValue = (s: StrategyData, key: ColumnId): number | string => {
         case "burn": return s.burnedPercentage || 0;
         case "stratHolders": return s.stratHolders || 0;
         case "buyVolume": return s.buyVolume || 0;
+        case "stratBuy24hVol": return s.stratBuy24hVol || 0;
+        case "stratSell24hVol": return s.stratSell24hVol || 0;
         case "saleVolume": return s.saleVolume || 0;
         case "realizedPnL": return s.realizedPnLEth || 0;
         case "treasury": return s.treasuryValueUsd || 0;
@@ -577,6 +583,16 @@ export default function StrategyDashboard(): JSX.Element {
                                                                 </div>
                                                                 <div className="text-[10px] text-gray-400 font-medium">
                                                                     {col.id === "buyVolume" ? s.buyCount : s.saleCount} txns
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {(col.id === "stratBuy24hVol" || col.id === "stratSell24hVol") && (
+                                                            <div className="flex flex-col items-end">
+                                                            <div className={`font-bold font-mono ${col.id === "stratBuy24hVol" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                                                                    {fmtEth(s[col.id])}
+                                                                </div>
+                                                                <div className="text-[10px] text-gray-400 font-medium">
+                                                                {col.id === "stratBuy24hVol" ? s.stratBuy24h : s.stratSell24h} txns
                                                                 </div>
                                                             </div>
                                                         )}
