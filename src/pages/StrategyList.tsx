@@ -3,11 +3,11 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     TrendingUp, TrendingDown, Loader2, Flame,
-    Filter, Columns, ArrowUpDown, Check,  ChevronRight, ChevronLeft,
+    Filter, Columns, ArrowUpDown, Check, ChevronRight, ChevronLeft, Activity,
     X, Users,
     Search, EyeOff, Eye, PanelLeftClose, PieChart, 
     Maximize2,
-    Globe, FileText, Anchor, 
+    //Globe, FileText, Anchor, 
 } from "lucide-react";
 // Assumes you have these components/utils available in your project
 import { fmtPercent} from '../utils/format';
@@ -16,7 +16,8 @@ import { EN_COLUMN_DESCRIPTIONS } from '../utils/enColumnDescriptions';
 //import { formatTooltip } from '../utils/tooltipUtils';
 
 // --- 1. CONFIGURATION ---
-const STRATEGIES_DATA_URL = "https://tw-aggregator.wut-tw.workers.dev/strategies_summary.json";
+const PROXY = import.meta.env.VITE_TW_WUT_URL;
+const STRATEGIES_DATA_URL = `${PROXY}/strategies_summary.json`;
 const LOCAL_STORAGE_KEY = 'tw_visible_columns'; // Clé de persistence
 // --- 2. TYPES ---
 type HolderData = { count: number; distribution: Record<string, string>; };
@@ -338,7 +339,16 @@ export default function StrategyDashboard(): JSX.Element {
 
                 {/* RIGHT SIDE */}
                 <div className="flex items-center gap-2">
-                    
+                    <button
+                        id="btn-navigate"
+                        onClick={() => navigate("/metrics")}
+                        className={`p-2 rounded-md transition-colors ${activePanel === "strategies"
+                            ? "bg-blue-100 text-blue-600"
+                            : "hover:bg-gray-100 text-gray-500"
+                            }`}
+                    >
+                        <Activity size={20} />
+                    </button>
 
                     <button
                         id="btn-strategies"
@@ -454,10 +464,37 @@ export default function StrategyDashboard(): JSX.Element {
                                         // SPECIAL COLUMN: STRATEGY IDENTITY
                                         if (col.id === "strategy") return (
                                             <td key={col.id} className="px-4 py-3 bg-white dark:bg-gray-900 sticky left-0 z-20 group-hover:bg-blue-50/50 dark:group-hover:bg-gray-900 shadow-[4px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100 dark:border-gray-800 min-w-[280px]">
+                                                <div className="flex items-center gap-4">
+                                                    
+                                                    <div className="relative">
+                                                        <img
+                                                            src={s.collectionImage}
+                                                            alt={s.tokenName}
+                                                            className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40'; }}
+                                                        />
+                                                        <div className="absolute -bottom-1 -right-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-bold px-1 rounded border border-gray-300 dark:border-gray-600">
+                                                            {s.tokenSymbol}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                            {s.tokenName}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {s.collectionName}
+                                                        </p>
+                                                    </div>
+                                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={(e) => handleHideStrategy(e, s.id)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-400 hover:text-red-500" title="Hide Strategy"><EyeOff size={16} /></button>
+                                                    </div>
+                                                </div>
+                                                {/*
                                                 <div className="flex items-center gap-4 relative">
                                                     <div className="relative">
                                                         <img src={s.collectionImage} className="w-10 h-10 rounded-xl border border-gray-200 dark:border-gray-700 object-cover shadow-sm group-hover:scale-105 transition-transform duration-200" />
-                                                        {/* Optional status indicator dot if needed */}
+                                                   
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
                                                         <div className="font-bold text-sm text-gray-900 dark:text-gray-100 truncate">{s.tokenName}
@@ -468,11 +505,9 @@ export default function StrategyDashboard(): JSX.Element {
                                                             <a href={`https://etherscan.io/address/${s.tokenAddress}`} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-orange-500 transition-colors" title="Contract"><FileText size={14} /></a>
                                                             {s.collectionOsSlug && <a href={`https://opensea.io/collection/${s.collectionOsSlug}`} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors" title="OpenSea"><Anchor size={14} /></a>}
                                                         </div>
-                                                    </div>
-                                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={(e) => handleHideStrategy(e, s.id)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-400 hover:text-red-500" title="Hide Strategy"><EyeOff size={16} /></button>
-                                                    </div>
+                                                    </div>    
                                                 </div>
+                                                */}
                                             </td>
                                         );
 

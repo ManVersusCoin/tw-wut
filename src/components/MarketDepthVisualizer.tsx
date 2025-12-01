@@ -7,7 +7,7 @@ import { ArrowUp, Layers, Flame, Crown, Zap } from 'lucide-react';
 interface Listing {
     tokenId: string | number;
     price: number;
-    source: 'strategy' | 'opensea';
+    source: 'strategy' | 'opensea' | 'Cryptopunks';
 }
 
 interface MarketDepthKPIs {
@@ -63,7 +63,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
         const floorPrice = kpis?.localFloor || displayMin;
         const priceLimit = floorPrice * 6; // La limite est 6 fois le floor
         const osPricesUnderLimit = listings
-            .filter(l => l.source === 'opensea' && l.price < priceLimit)
+            .filter(l => l.source !== 'strategy' && l.price < priceLimit)
             .map(l => l.price);
 
         let calculatedMax = maxPrice;
@@ -79,7 +79,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
             start: number;
             end: number;
             Strategy: number;
-            OpenSea: number;
+            MarketPlace: number;
             BucketVolumeEth: number;
         }> = [];
 
@@ -97,7 +97,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
 
             const inRange = listings.filter(l => l.price >= current && l.price < next);
             const strategyCount = inRange.filter(l => l.source === 'strategy').length;
-            const osCount = inRange.filter(l => l.source === 'opensea').length;
+            const osCount = inRange.filter(l => l.source !== 'strategy').length;
             const bucketVolumeEth = inRange.reduce((sum, l) => sum + l.price, 0); 
             const label = `${current.toFixed(3)}–${next.toFixed(3)}`;
 
@@ -107,7 +107,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                     start: current,
                     end: next,
                     Strategy: strategyCount,
-                    OpenSea: osCount,
+                    MarketPlace: osCount,
                     BucketVolumeEth: bucketVolumeEth
                 });
             }
@@ -121,7 +121,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                 start: displayMin,
                 end: displayMax,
                 Strategy: listings.filter(l => l.source === 'strategy').length,
-                OpenSea: listings.filter(l => l.source === 'opensea').length,
+                MarketPlace: listings.filter(l => l.source !== 'strategy').length,
                 BucketVolumeEth: listings.reduce((sum, l) => sum + l.price, 0)
             });
         }
@@ -161,7 +161,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                 .reduce((sum, b) => sum + (b.Strategy || 0), 0);
             const cumulativeOpenSea = chartData
                 .slice(0, index + 1)
-                .reduce((sum, b) => sum + (b.OpenSea || 0), 0);
+                .reduce((sum, b) => sum + (b.MarketPlace || 0), 0);
             const cumulativeTotal = cumulativeStrategy + cumulativeOpenSea;
 
             // Cumulative Volume
@@ -189,7 +189,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-blue-500" />
-                            <span>OpenSea NFTs: <strong>{cumulativeOpenSea}</strong></span>
+                            <span>Listed NFTs: <strong>{cumulativeOpenSea}</strong></span>
                         </div>
                         <div className="flex items-center gap-2 font-semibold">
                             <div className="w-3 h-3 rounded-full bg-purple-500" />
@@ -227,7 +227,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                         <Layers className="w-5 h-5 text-indigo-500" />
                         Market Depth
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Strategy vs OpenSea</p>
+                    <p className="text-sm text-gray-500 mt-1">Strategy vs Listed</p>
                 </div>
 
                 <select
@@ -252,7 +252,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                             <Crown className="w-5 h-5 text-emerald-500" />
                         </div>
                         <div className="text-2xl font-bold">{kpis.dominanceCount}</div>
-                        <div className="text-xs text-emerald-600">listings below OS floor</div>
+                        <div className="text-xs text-emerald-600">listings below floor</div>
                         <div className="text-xs text-gray-600 mt-1">Volume: {kpis.dominanceVolumeEth.toFixed(3)} ETH</div>
                     </div>
                 ) : (
@@ -262,7 +262,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                             <ArrowUp className="w-5 h-5 text-blue-500" />
                         </div>
                         <div className="text-2xl font-bold">{kpis.wallCount}</div>
-                        <div className="text-xs text-blue-600">OS listings under Strategy</div>
+                        <div className="text-xs text-blue-600">Listings under Strategy</div>
                         <div className="text-xs text-gray-600 mt-1">Volume: {kpis.wallVolumeEth.toFixed(3)} ETH</div>
                     </div>
                 )}
@@ -276,7 +276,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                     </div>
                     <div className="text-xs text-gray-500 mt-2 flex justify-between">
                         <span>Strategy: <strong>{kpis.localFloor.toFixed(3)}</strong></span>
-                        <span>OS: <strong>{kpis.osFloor.toFixed(3)}</strong></span>
+                        <span>MarketPlace: <strong>{kpis.osFloor.toFixed(3)}</strong></span>
                     </div>
                 </div>
 
@@ -338,7 +338,7 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                         />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend verticalAlign="top" height={36} />
-                        <Bar dataKey="OpenSea" stackId="a" fill="#3B82F6" name="OpenSea" />
+                        <Bar dataKey="MarketPlace" stackId="a" fill="#3B82F6" name="MarketPlace" />
                         <Bar dataKey="Strategy" stackId="a" fill="#10B981" name="Strategy" />
                         <Line
                             type="monotone"

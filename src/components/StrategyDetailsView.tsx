@@ -243,253 +243,252 @@ export default function StrategyDetailView({
         < div className = "grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" >
             {/* 1. Identity */ }
             < div className = "bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between" >
-                    <div className="flex items-start gap-4">
-                        <img
-                            src={strategy.collectionImage}
-                            className="w-16 h-16 rounded-xl object-cover border-2 border-gray-100 dark:border-gray-700 shadow-md"
-                        />
+                <div className="flex items-start gap-4">
+                    <img
+                        src={strategy.collectionImage}
+                        className="w-16 h-16 rounded-xl object-cover border-2 border-gray-100 dark:border-gray-700 shadow-md"
+                    />
 
-                        <div className="flex-grow">
+                    <div className="flex-grow">
+                        {/* 1. Ligne du Titre, Symbole ET Bouton '...' (utilisant justify-between) */}
+                        <div className="flex justify-between items-start mb-1">
 
-                            {/* 1. Ligne du Titre, Symbole ET Bouton '...' (utilisant justify-between) */}
-                            <div className="flex justify-between items-start mb-1">
+                            {/* Groupe de gauche : Titre et Symbole */}
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{strategy.tokenName}</h1>
+                                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-bold border border-blue-200 dark:border-blue-800">{strategy.tokenSymbol}</span>
+                            </div>
 
-                                {/* Groupe de gauche : Titre et Symbole */}
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{strategy.tokenName}</h1>
-                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-bold border border-blue-200 dark:border-blue-800">{strategy.tokenSymbol}</span>
-                                </div>
+                            {/* Groupe de droite : Bouton '...' et Dropdown (Positionnement relatif) */}
+                            <div className="relative z-10">
+                                <button
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                    className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300"
+                                    aria-expanded={isDropdownOpen}
+                                >
+                                    <EllipsisVertical size={20} />
+                                </button>
 
-                                {/* Groupe de droite : Bouton '...' et Dropdown (Positionnement relatif) */}
-                                <div className="relative z-10">
-                                    <button
-                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300"
-                                        aria-expanded={isDropdownOpen}
+                                {/* Contenu de la liste déroulante */}
+                                {isDropdownOpen && (
+                                    <div
+                                        // CLÉ : 'right-0' pour aligner la liste à droite du bouton
+                                        className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-20 p-1 origin-top-right animate-in fade-in zoom-in-95 duration-200"
+                                        onMouseLeave={() => setIsDropdownOpen(false)}
                                     >
-                                        <EllipsisVertical size={20} />
-                                    </button>
-
-                                    {/* Contenu de la liste déroulante */}
-                                    {isDropdownOpen && (
-                                        <div
-                                            // CLÉ : 'right-0' pour aligner la liste à droite du bouton
-                                            className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-20 p-1 origin-top-right animate-in fade-in zoom-in-95 duration-200"
-                                            onMouseLeave={() => setIsDropdownOpen(false)}
+                                        {/* Lien 1 */}
+                                        <a
+                                            href={`https://nftstrategy.fun/strategies/${strategy.tokenAddress}`}
+                                            target="_blank"
+                                            className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
                                         >
-                                            {/* Lien 1 */}
+                                            <Globe size={16} /> Strategy Page
+                                        </a>
+
+                                        {/* Lien 2 */}
+                                        <a
+                                            href={`https://etherscan.io/address/${strategy.tokenAddress}`}
+                                            target="_blank"
+                                            className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
+                                        >
+                                            <FileText size={16} /> Etherscan
+                                        </a>
+
+                                        {/* Lien 3 (Optionnel) */}
+                                        {strategy.collectionOsSlug && (
                                             <a
-                                                href={`https://nftstrategy.fun/strategies/${strategy.tokenAddress}`}
+                                                href={`https://opensea.io/collection/${strategy.collectionOsSlug}`}
                                                 target="_blank"
                                                 className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
                                             >
-                                                <Globe size={16} /> Strategy Page
+                                                <Anchor size={16} /> OpenSea
                                             </a>
-
-                                            {/* Lien 2 */}
-                                            <a
-                                                href={`https://etherscan.io/address/${strategy.tokenAddress}`}
-                                                target="_blank"
-                                                className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
-                                            >
-                                                <FileText size={16} /> Etherscan
-                                            </a>
-
-                                            {/* Lien 3 (Optionnel) */}
-                                            {strategy.collectionOsSlug && (
-                                                <a
-                                                    href={`https://opensea.io/collection/${strategy.collectionOsSlug}`}
-                                                    target="_blank"
-                                                    className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
-                                                >
-                                                    <Anchor size={16} /> OpenSea
-                                                </a>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-
-                            {/* 2. Vous pouvez ajouter ici d'autres éléments qui devaient se trouver en dessous du titre */}
-
                         </div>
+
+                        {/* 2. Vous pouvez ajouter ici d'autres éléments qui devaient se trouver en dessous du titre */}
+
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-6">
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="text-xs text-gray-400 font-bold uppercase">Price</div>
-                            <div className="text-xl font-bold">{fmtPrice(parseFloat(strategy.poolData.price_usd))}</div>
-                        </div>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="text-xs text-gray-400 font-bold uppercase">Mcap</div>
-                            <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.poolData.market_cap_usd), 2)}</div>
-                        </div>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="text-xs text-gray-400 font-bold uppercase">Price change 24h</div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xs text-gray-400 font-bold uppercase">Price</div>
+                        <div className="text-xl font-bold">{fmtPrice(parseFloat(strategy.poolData.price_usd))}</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xs text-gray-400 font-bold uppercase">Mcap</div>
+                        <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.poolData.market_cap_usd), 2)}</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xs text-gray-400 font-bold uppercase">Price change 24h</div>
                             
-                            {(
-                                strategy.poolData.price_change_24h !== undefined ? (
-                                    <div className={`flex items-center text-sm gap-1 font-bold px-2 mt-1 py-1 rounded-md border w-fit mr-auto  ${strategy.poolData.price_change_24h >= 0 ? "text-green-700 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400" : "text-red-700 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"}`}>
-                                        {strategy.poolData.price_change_24h >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                        {Math.abs(strategy.poolData.price_change_24h).toFixed(2)}%
-                                    </div>
-                                ) : <span className="text-gray-400">-</span>
-                            )}
-                        </div>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="text-xs text-gray-400 font-bold uppercase">Volume 24h</div>
-                            <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.poolData.volume_24h), 2)}</div>
-                        </div>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="text-xs text-gray-400 font-bold uppercase">Burn</div>
-
-                            <div className="flex items-center justify-between mt-1">
-
-                                
-                                <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-md text-sm font-bold border border-orange-200 dark:border-orange-800 shadow-sm">
-                                    <Flame size={12} />
-                                    {strategy.burnedPercentage?.toFixed(1)}%
+                        {(
+                            strategy.poolData.price_change_24h !== undefined ? (
+                                <div className={`flex items-center text-sm gap-1 font-bold px-2 mt-1 py-1 rounded-md border w-fit mr-auto  ${strategy.poolData.price_change_24h >= 0 ? "text-green-700 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400" : "text-red-700 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"}`}>
+                                    {strategy.poolData.price_change_24h >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                    {Math.abs(strategy.poolData.price_change_24h).toFixed(2)}%
                                 </div>
-
-                                
-                                <div className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                                    {fmtNum(strategy.burnedAmount)}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                            <div className="text-xs text-gray-400 font-bold uppercase">Holders</div>
-
-                            <div className="flex items-center justify-between mt-1">
-
-                                {/* Nombre de holders */}
-                                <div className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 
-                        text-blue-700 dark:text-blue-300 
-                        px-2 py-1 rounded-md text-sm font-bold border 
-                        border-blue-200 dark:border-blue-800 shadow-sm">
-                                    {fmtNum(strategy.stratHolders)}
-                                </div>
-
-                                {/* Label */}
-                                <div className="text-xs text-gray-500 dark:text-gray-300 uppercase font-semibold">
-                                    Token Holders
-                                </div>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div >
-                <TreasuryBlock
-                    strategy={strategy}
-                    ethPrice={ethPrice}
-                />
-                
-                {/* 3. PnL */ }
-                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-                    {/* Title */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                            <Activity className="text-blue-500" size={20} />
-                            Fees & PNL
-                        </h3>
-                    </div>
-                    {/* Fees Section */}
-                    <div className="p-6 grid grid-cols-1 gap-6">
-                    <div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Coins size={14} className="text-gray-400" />
-                            <span className="text-xs font-bold text-gray-500 uppercase">Lifetime Fees Generated</span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="bg-blue-50 dark:bg-blue-900/10 p-2 rounded border border-blue-100 dark:border-blue-900/30">
-                                <div className="text-[10px] text-blue-600 dark:text-blue-400 mb-1">Strategy (8%)</div>
-                                <div className="font-bold text-sm dark:text-gray-200">{fmtEth(strategy.feesStrat)}</div>
-                            </div>
-                            <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
-                                <div className="text-[10px] text-gray-500 mb-1">Platform (1%)</div>
-                                <div className="font-bold text-sm text-gray-600 dark:text-gray-400">{fmtEth(strategy.feesPnkstr)}</div>
-                            </div>
-                            <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
-                                <div className="text-[10px] text-gray-500 mb-1">Royalties (1%)</div>
-                                <div className="font-bold text-sm text-gray-600 dark:text-gray-400">{fmtEth(strategy.feesRoyalties)}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* P&L Section */}
-                    <div className="flex justify-between items-start gap-4">
-                        <div>
-                            <div className={`text-3xl font-bold ${strategy.realizedPnLEth >= 0 ? "text-green-600" : "text-red-600"}`}>
-                                {fmtEth(strategy.realizedPnLEth)}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">Total Realized P&L</div>
-                        </div>
-
-                        {metrics.bestPnL && metrics.bestPnL.tradeCount > 0 && (
-                            <div className="flex flex-col items-end">
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                                    <Trophy size={10} /> Best P&L NFT
-                                </span>
-                                <div className="flex items-center gap-2 mt-2">
-                                    {bestNftImage && <img src={bestNftImage} className="w-20 h-20 rounded border border-gray-200" />}
-                                    <div className="text-right">
-                                        <div className="text-sm font-bold text-green-600">+{metrics.bestPnL.totalProfitEth.toFixed(2)}Ξ</div>
-                                        <div className="text-[10px] text-gray-400">ID #{metrics.bestPnL.tokenId}</div>
-                                    </div>
-                                </div>
-                            </div>
+                            ) : <span className="text-gray-400">-</span>
                         )}
                     </div>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xs text-gray-400 font-bold uppercase">Volume 24h</div>
+                        <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.poolData.volume_24h), 2)}</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xs text-gray-400 font-bold uppercase">Burn</div>
 
-                    {/* Buy / Sell Volume Section */}
-                    <div className="flex flex-col gap-2">
-                        <div className="text-xs text-gray-400 font-bold uppercase">Buy / Sale Volume</div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded">
-                                <div className="text-xs text-green-700">Buys</div>
-                                <div className="font-bold">
-                                    {fmtEth(strategy.buyVolume)} <span className="text-xs font-normal">({strategy.buyCount})</span>
-                                </div>
+                        <div className="flex items-center justify-between mt-1">
+
+                                
+                            <div className="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-md text-sm font-bold border border-orange-200 dark:border-orange-800 shadow-sm">
+                                <Flame size={12} />
+                                {strategy.burnedPercentage?.toFixed(1)}%
                             </div>
-                            <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                                <div className="text-xs text-red-700">Sells</div>
-                                <div className="font-bold">
-                                    {fmtEth(strategy.saleVolume)} <span className="text-xs font-normal">({strategy.saleCount})</span>
-                                </div>
+
+                                
+                            <div className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                                {fmtNum(strategy.burnedAmount)}
                             </div>
                         </div>
+                    </div>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="text-xs text-gray-400 font-bold uppercase">Holders</div>
+
+                        <div className="flex items-center justify-between mt-1">
+
+                            {/* Nombre de holders */}
+                            <div className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 
+                    text-blue-700 dark:text-blue-300 
+                    px-2 py-1 rounded-md text-sm font-bold border 
+                    border-blue-200 dark:border-blue-800 shadow-sm">
+                                {fmtNum(strategy.stratHolders)}
+                            </div>
+
+                            {/* Label */}
+                            <div className="text-xs text-gray-500 dark:text-gray-300 uppercase font-semibold">
+                                Token Holders
+                            </div>
+                        </div>
+                    </div>
+                        
+                </div>
+            </div >
+            <TreasuryBlock
+                strategy={strategy}
+                ethPrice={ethPrice}
+            />
+                
+            {/* 3. PnL */ }
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+                {/* Title */}
+                <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <Activity className="text-blue-500" size={20} />
+                        Fees & PNL
+                    </h3>
+                </div>
+                {/* Fees Section */}
+                <div className="p-6 grid grid-cols-1 gap-6">
+                <div>
+                    <div className="flex items-center gap-2 mb-3">
+                        <Coins size={14} className="text-gray-400" />
+                        <span className="text-xs font-bold text-gray-500 uppercase">Lifetime Fees Generated</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-blue-50 dark:bg-blue-900/10 p-2 rounded border border-blue-100 dark:border-blue-900/30">
+                            <div className="text-[10px] text-blue-600 dark:text-blue-400 mb-1">Strategy (8%)</div>
+                            <div className="font-bold text-sm dark:text-gray-200">{fmtEth(strategy.feesStrat)}</div>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
+                            <div className="text-[10px] text-gray-500 mb-1">Platform (1%)</div>
+                            <div className="font-bold text-sm text-gray-600 dark:text-gray-400">{fmtEth(strategy.feesPnkstr)}</div>
+                        </div>
+                        <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-100 dark:border-gray-700">
+                            <div className="text-[10px] text-gray-500 mb-1">Royalties (1%)</div>
+                            <div className="font-bold text-sm text-gray-600 dark:text-gray-400">{fmtEth(strategy.feesRoyalties)}</div>
                         </div>
                     </div>
                 </div>
-</div>
 
-            {/* NEW SECTION 1: MARKET STATS & FEES */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                {/* P&L Section */}
+                <div className="flex justify-between items-start gap-4">
+                    <div>
+                        <div className={`text-3xl font-bold ${strategy.realizedPnLEth >= 0 ? "text-green-600" : "text-red-600"}`}>
+                            {fmtEth(strategy.realizedPnLEth)}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">Total Realized P&L</div>
+                    </div>
 
-                {/* Left Side: Chart (Takes up 2 columns on large screens) */}
-                <div className="xl:col-span-2">
-                    <MarketDepthVisualizer
-                        market_depth_data={strategy.market_depth_data}
-                        marketDepthKPIs={strategy.marketDepthKPIs}
-                        tokenPriceUsd={parseFloat(strategy.poolData?.price_usd || '0')}
-                    />
+                    {metrics.bestPnL && metrics.bestPnL.tradeCount > 0 && (
+                        <div className="flex flex-col items-end">
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                <Trophy size={10} /> Best P&L NFT
+                            </span>
+                            <div className="flex items-center gap-2 mt-2">
+                                {bestNftImage && <img src={bestNftImage} className="w-20 h-20 rounded border border-gray-200" />}
+                                <div className="text-right">
+                                    <div className="text-sm font-bold text-green-600">+{metrics.bestPnL.totalProfitEth.toFixed(2)}Ξ</div>
+                                    <div className="text-[10px] text-gray-400">ID #{metrics.bestPnL.tokenId}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <div className="xl:col-span-1 min-h-[600px]">
-                    <MarketSimulator
-                        listings={strategy.market_depth_data}
-                        poolData={strategy.poolDataExt}
-                        tokenSymbol={strategy.tokenSymbol}
-                    />
-                </div>
-                </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="flex flex-col h-full">
-                    <NFTActivityBlock strategy={strategy} />
-                </div>
-                <div className="flex flex-col h-full">
-                    <HoldersOverview strategy={strategy} />
+
+                {/* Buy / Sell Volume Section */}
+                <div className="flex flex-col gap-2">
+                    <div className="text-xs text-gray-400 font-bold uppercase">Buy / Sale Volume</div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded">
+                            <div className="text-xs text-green-700">Buys</div>
+                            <div className="font-bold">
+                                {fmtEth(strategy.buyVolume)} <span className="text-xs font-normal">({strategy.buyCount})</span>
+                            </div>
+                        </div>
+                        <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                            <div className="text-xs text-red-700">Sells</div>
+                            <div className="font-bold">
+                                {fmtEth(strategy.saleVolume)} <span className="text-xs font-normal">({strategy.saleCount})</span>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        {/* NEW SECTION 1: MARKET STATS & FEES */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+
+            {/* Left Side: Chart (Takes up 2 columns on large screens) */}
+            <div className="xl:col-span-2">
+                <MarketDepthVisualizer
+                    market_depth_data={strategy.market_depth_data}
+                    marketDepthKPIs={strategy.marketDepthKPIs}
+                    tokenPriceUsd={parseFloat(strategy.poolData?.price_usd || '0')}
+                />
+            </div>
+            <div className="xl:col-span-1 min-h-[600px]">
+                <MarketSimulator
+                    listings={strategy.market_depth_data}
+                    poolData={strategy.poolDataExt}
+                    tokenSymbol={strategy.tokenSymbol}
+                />
+            </div>
+            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="flex flex-col h-full">
+                <NFTActivityBlock strategy={strategy} />
+            </div>
+            <div className="flex flex-col h-full">
+                <HoldersOverview strategy={strategy} />
+            </div>
+        </div>
             
-        </div >
+    </div >
     );
 }
