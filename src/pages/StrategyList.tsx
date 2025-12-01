@@ -60,6 +60,8 @@ export type StrategyData = {
     saleVolume: number;
     stratSell24hVol: number;
     stratBuy24hVol: number;
+    stratSell24h: number;
+    stratBuy24h: number;
     buyCount: number;
     saleCount: number;
     realizedPnLEth: number;
