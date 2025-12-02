@@ -316,27 +316,27 @@ export default function StrategyDetailView({
                 <div className="grid grid-cols-2 gap-4 mt-6">
                     <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                         <div className="text-xs text-gray-400 font-bold uppercase">Price</div>
-                        <div className="text-xl font-bold">{fmtPrice(parseFloat(strategy.poolData.price_usd))}</div>
+                        <div className="text-xl font-bold">{fmtPrice(parseFloat(strategy.price_usd))}</div>
                     </div>
                     <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                         <div className="text-xs text-gray-400 font-bold uppercase">Mcap</div>
-                        <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.poolData.market_cap_usd), 2)}</div>
+                        <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.market_cap_usd), 2)}</div>
                     </div>
                     <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                         <div className="text-xs text-gray-400 font-bold uppercase">Price change 24h</div>
                             
                         {(
-                            strategy.poolData.price_change_24h !== undefined ? (
-                                <div className={`flex items-center text-sm gap-1 font-bold px-2 mt-1 py-1 rounded-md border w-fit mr-auto  ${strategy.poolData.price_change_24h >= 0 ? "text-green-700 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400" : "text-red-700 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"}`}>
-                                    {strategy.poolData.price_change_24h >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                    {Math.abs(strategy.poolData.price_change_24h).toFixed(2)}%
+                                strategy.priceChange24h !== undefined ? (
+                                    <div className={`flex items-center text-sm gap-1 font-bold px-2 mt-1 py-1 rounded-md border w-fit mr-auto  ${strategy.priceChange24h >= 0 ? "text-green-700 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400" : "text-red-700 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"}`}>
+                                        {strategy.priceChange24h >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                        {Math.abs(strategy.priceChange24h).toFixed(2)}%
                                 </div>
                             ) : <span className="text-gray-400">-</span>
                         )}
                     </div>
                     <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                         <div className="text-xs text-gray-400 font-bold uppercase">Volume 24h</div>
-                        <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.poolData.volume_24h), 2)}</div>
+                            <div className="text-xl font-bold">{fmtUSD(parseFloat(strategy.volume24h), 2)}</div>
                     </div>
                     <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                         <div className="text-xs text-gray-400 font-bold uppercase">Burn</div>
