@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 // Importation de tes utilitaires
 import { fmtUSD, fmtNum, fmtPercent, fmtEth } from '../utils/format';
-
+//import StrategyShareableWidget from '../components/StrategyShareableWidget';
 // --- Constantes d'API ---
 const PROXY = import.meta.env.VITE_TW_WUT_URL;
 const STRATEGIES_DATA_URL = `${PROXY}/strategies_summary.json`;
@@ -176,7 +176,7 @@ const MetricsPage = () => {
             mcap: acc.mcap + (curr.market_cap_usd || 0),
             treasury: acc.treasury + (curr.treasuryValueUsd || 0),
             inventory: acc.inventory + (curr.inventoryCount || 0),
-            volume: acc.volume + (curr.poolData?.volume_24h ? parseFloat(curr.poolData.volume_24h) : 0)
+            volume: acc.volume + (curr.volume24h ? parseFloat(curr.volume24h) : 0)
         }), { mcap: 0, treasury: 0, inventory: 0, volume: 0 });
     }, [strategiesData]);
 
@@ -228,7 +228,7 @@ const MetricsPage = () => {
                         icon={Wallet}
                     />
                     <StatCard
-                        title="24h Volume"
+                        title="24h Tokens Volume"
                         value={fmtUSD(totals.volume, 2)}
                         icon={BarChart3}
                     />
@@ -238,10 +238,20 @@ const MetricsPage = () => {
                         icon={Layers}
                     />
                 </div>
-
+                
                 {/* --- Widgets Grid --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
-
+                    {/* Widget 2: Top Market Cap -> Affiche % du Total */}
+                    <RankingWidget
+                        title="Highest Market Cap"
+                        icon={Coins}
+                        data={strategiesData}
+                        getValue={(item: any) => item.market_cap_usd}
+                        formatValue={(val: number) => fmtUSD(val, 1)}
+                        // Fonction dynamique
+                        valueLabel={(_: any, val: number) => getShareOfTotal(val, totals.mcap)}
+                        color="green"
+                    />
                     {/* Widget 1: Top Treasury -> Affiche % du Total */}
                     <RankingWidget
                         title="Top Treasuries"
@@ -254,19 +264,9 @@ const MetricsPage = () => {
                         color="blue"
                     />
 
-                    {/* Widget 2: Top Market Cap -> Affiche % du Total */}
+                    
                     <RankingWidget
-                        title="Highest Market Cap"
-                        icon={Coins}
-                        data={strategiesData}
-                        getValue={(item: any) => item.market_cap_usd}
-                        formatValue={(val: number) => fmtUSD(val, 1)}
-                        // Fonction dynamique
-                        valueLabel={(_: any, val: number) => getShareOfTotal(val, totals.mcap)}
-                        color="green"
-                    />
-                    <RankingWidget
-                        title="NFT Buys (24h)"
+                        title="NFT Buys by TW contracts (24h)"
                         icon={Activity}
                         data={strategiesData}
                         getValue={(item: any) => parseFloat(item.stratBuy24h || 0)}
@@ -280,7 +280,7 @@ const MetricsPage = () => {
                         title="Top Volume (24h)"
                         icon={Activity}
                         data={strategiesData}
-                        getValue={(item: any) => parseFloat(item.poolData?.volume_24h || 0)}
+                        getValue={(item: any) => parseFloat(item.volume24h || 0)}
                         formatValue={(val: number) => fmtUSD(val, 2)}
                         // Fonction dynamique
                         valueLabel={(_: any, val: number) => getShareOfTotal(val, totals.volume)}
@@ -295,7 +295,7 @@ const MetricsPage = () => {
                         getValue={(item: any) => item.marketDepthKPIs?.spreadPercent ?? 100}
                         formatValue={(val: number) => `${fmtPercent(String(val))}%`}
                         sortDirection="asc"
-                        valueLabel="Spread"
+                        valueLabel={(item: any) => fmtEth(item.marketDepthKPIs?.wallVolumeEth)}
                         color="orange"
                     />
 
@@ -326,6 +326,11 @@ const MetricsPage = () => {
                     />
 
                 </div>
+                {/* --- NEW VISUAL WIDGET --- 
+                <div className="mt-10">
+                    <StrategyShareableWidget data={strategiesData} />
+                </div>
+                */}
             </div>
         </div>
     );

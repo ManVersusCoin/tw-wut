@@ -467,14 +467,14 @@ export default function StrategyDetailView({
             {/* Left Side: Chart (Takes up 2 columns on large screens) */}
             <div className="xl:col-span-2">
                 <MarketDepthVisualizer
-                    market_depth_data={strategy.market_depth_data}
+                    market_depth_data={strategy.marketDepthData}
                     marketDepthKPIs={strategy.marketDepthKPIs}
                     tokenPriceUsd={parseFloat(strategy.poolData?.price_usd || '0')}
                 />
             </div>
             <div className="xl:col-span-1 min-h-[600px]">
                 <MarketSimulator
-                    listings={strategy.market_depth_data}
+                    listings={strategy.marketDepthData}
                     poolData={strategy.poolDataExt}
                     tokenSymbol={strategy.tokenSymbol}
                 />
