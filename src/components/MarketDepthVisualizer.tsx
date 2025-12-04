@@ -275,8 +275,8 @@ export const MarketDepthVisualizer: React.FC<MarketVisualizerProps> = ({
                         </span>
                     </div>
                     <div className="text-xs text-gray-500 mt-2 flex justify-between">
-                        <span>Strategy: <strong>{kpis.localFloor.toFixed(3)}</strong></span>
-                        <span>MarketPlace: <strong>{kpis.osFloor.toFixed(3)}</strong></span>
+                        <span>Strategy: <strong>{kpis?.localFloor?.toFixed(3)}</strong></span>
+                        <span>MarketPlace: <strong>{kpis?.osFloor?.toFixed(3)}</strong></span>
                     </div>
                 </div>
 

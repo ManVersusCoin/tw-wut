@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 // Importation de tes utilitaires
 import { fmtUSD, fmtNum, fmtPercent, fmtEth } from '../utils/format';
-//import StrategyShareableWidget from '../components/StrategyShareableWidget';
+import TradeFeed from '../components/TradeFeed';
 // --- Constantes d'API ---
 const PROXY = import.meta.env.VITE_TW_WUT_URL;
 const STRATEGIES_DATA_URL = `${PROXY}/strategies_summary.json`;
@@ -263,18 +263,6 @@ const MetricsPage = () => {
                         valueLabel={(_: any, val: number) => getShareOfTotal(val, totals.treasury)}
                         color="blue"
                     />
-
-                    
-                    <RankingWidget
-                        title="NFT Buys by TW contracts (24h)"
-                        icon={Activity}
-                        data={strategiesData}
-                        getValue={(item: any) => parseFloat(item.stratBuy24h || 0)}
-                        formatValue={(val: number) => fmtNum(val)}
-                        // Fonction dynamique
-                        valueLabel={(item: any) => fmtEth(item.stratBuy24hVol)}
-                        color="purple"
-                    />
                     {/* Widget 3: Best 24h Volume -> Affiche % du Total */}
                     <RankingWidget
                         title="Top Volume (24h)"
@@ -286,7 +274,36 @@ const MetricsPage = () => {
                         valueLabel={(_: any, val: number) => getShareOfTotal(val, totals.volume)}
                         color="purple"
                     />
+                    {/* 
+                    <RankingWidget
+                        title="NFT Buys by TW contracts (24h)"
+                        icon={Activity}
+                        data={strategiesData}
+                        getValue={(item: any) => parseFloat(item.stratBuy24h || 0)}
+                        formatValue={(val: number) => fmtNum(val)}
+                        // Fonction dynamique
+                        valueLabel={(item: any) => fmtEth(item.stratBuy24hVol)}
+                        color="purple"
+                    />
+                    */}
+                    <div className="bg-white bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm flex flex-col h-full">
+                        {/* Header Section */}
+                        <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                NFT Activity feeds (7d)
+                            </h3>
+                        </div>
 
+                        {/* List Section */}
+                        <div className="p-0 flex-1">
+                            <TradeFeed
+                                sourceType='global'
+                                timeframe='7d'
+                                typeFilter='ALL'
+                            />
+                        </div>
+
+                    </div>
                     {/* Widget 4: Tightest Spreads -> Reste statique "Spread" (car c'est déjà un %) */}
                     <RankingWidget
                         title="Tightest Spreads"
@@ -324,13 +341,10 @@ const MetricsPage = () => {
                         valueLabel="Change"
                         color="green"
                     />
-
+                    
+                    
                 </div>
-                {/* --- NEW VISUAL WIDGET --- 
-                <div className="mt-10">
-                    <StrategyShareableWidget data={strategiesData} />
-                </div>
-                */}
+                
             </div>
         </div>
     );

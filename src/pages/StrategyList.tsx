@@ -12,6 +12,7 @@ import {
 // Assumes you have these components/utils available in your project
 import { fmtPercent, fmtUSD, fmtNum, fmtEth } from '../utils/format'; // Assumed imports based on usage
 import { Tooltip } from "../components/Tooltip";
+import TradeVolumeCell from "../components/TradeVolumeCell";
 import { EN_COLUMN_DESCRIPTIONS } from '../utils/enColumnDescriptions';
 
 // --- 1. CONFIGURATION ---
@@ -63,6 +64,10 @@ export type StrategyData = {
     stratBuy24hVol: number;
     stratSell24h: number;
     stratBuy24h: number;
+    stratSell7dVol: number;
+    stratBuy7dVol: number;
+    stratSell7d: number;
+    stratBuy7d: number;
     buyCount: number;
     saleCount: number;
     realizedPnLEth: number;
@@ -91,7 +96,7 @@ export type StrategyData = {
 // --- 3. COLUMNS DEFINITION ---
 type ColumnId =
     | "strategy" | "price" | "priceChange24h" | "volume24h" | "stratMcap" | "burn" | "stratHolders"
-    | "treasury" | "currentBalance" | "buyVolume" | "saleVolume" | "realizedPnL" | "stratSell24hVol" | "stratBuy24hVol"
+    | "treasury" | "currentBalance" | "buyVolume" | "saleVolume" | "realizedPnL" | "stratSell24hVol" | "stratBuy24hVol" | "stratSell7dVol" | "stratBuy7dVol"
     | "feesStrat" | "feesPnkstr" | "feesRoyalties"
     | "nftFloor" | "nftMcap" | "nftHolders"
     | "ecoToken" | "ecoMcap" | "ecoHolders"
@@ -100,19 +105,21 @@ type ColumnId =
 
 const COLUMN_DEFS: { id: ColumnId; label: string; align: "left" | "right" | "center"; headerGroup?: string; width?: string }[] = [
     { id: "strategy", label: "Strategy", align: "left" },
-    { id: "price", label: "Price", align: "right", headerGroup: "Strategy" },
+    { id: "price", label: "Price", align: "center", headerGroup: "Strategy" },
     { id: "priceChange24h", label: "24h %", align: "right", headerGroup: "Strategy" },
     { id: "volume24h", label: "Vol 24h", align: "right", headerGroup: "Strategy" },
     { id: "stratMcap", label: "Mcap", align: "right", headerGroup: "Strategy" },
     { id: "burn", label: "Burn", align: "right", headerGroup: "Strategy" },
     { id: "stratHolders", label: "Holders", align: "center", headerGroup: "Strategy" },
     { id: "treasury", label: "Treasury", align: "right", headerGroup: "Trades & Holdings" },
-    { id: "currentBalance", label: "Balance", align: "right", headerGroup: "Trades & Holdings" },
-    { id: "buyVolume", label: "Buy Vol (Ξ)", align: "right", headerGroup: "Trades & Holdings" },
-    { id: "saleVolume", label: "Sale Vol (Ξ)", align: "right", headerGroup: "Trades & Holdings" },
+    { id: "currentBalance", label: "Balance", align: "center", headerGroup: "Trades & Holdings" },
+    { id: "buyVolume", label: "Buy Vol (Ξ)", align: "center", headerGroup: "Trades & Holdings" },
+    { id: "saleVolume", label: "Sale Vol (Ξ)", align: "center", headerGroup: "Trades & Holdings" },
     { id: "realizedPnL", label: "Realized P&L", align: "right", headerGroup: "Trades & Holdings" },
     { id: "stratSell24hVol", label: "Sale Vol (24h)", align: "right", headerGroup: "Trades & Holdings" },
     { id: "stratBuy24hVol", label: "Buy Vol (24h)", align: "right", headerGroup: "Trades & Holdings" },
+    { id: "stratSell7dVol", label: "Sale Vol (7d)", align: "right", headerGroup: "Trades & Holdings" },
+    { id: "stratBuy7dVol", label: "Buy Vol (7d)", align: "right", headerGroup: "Trades & Holdings" },
     { id: "feesStrat", label: "Strat (8%)", align: "right", headerGroup: "Fees" },
     { id: "feesPnkstr", label: "PNKSTR (1%)", align: "right", headerGroup: "Fees" },
     { id: "feesRoyalties", label: "Royalties (1%)", align: "right", headerGroup: "Fees" },
@@ -159,6 +166,8 @@ const getSortValue = (s: StrategyData, key: ColumnId): number | string => {
         case "buyVolume": return s.buyVolume || 0;
         case "stratBuy24hVol": return s.stratBuy24hVol || 0;
         case "stratSell24hVol": return s.stratSell24hVol || 0;
+        case "stratBuy7dVol": return s.stratBuy7dVol || 0;
+        case "stratSell7dVol": return s.stratSell7dVol || 0;
         case "saleVolume": return s.saleVolume || 0;
         case "realizedPnL": return s.realizedPnLEth || 0;
         case "treasury": return s.treasuryValueUsd || 0;
@@ -383,10 +392,11 @@ export default function StrategyDashboard(): JSX.Element {
                         {fmtEth(s[colId])}
                     </div>
                     <div className="text-[10px] text-gray-400 font-medium">
-                        {colId === "buyVolume" ? s.buyCount : s.saleCount} txns
+                        {colId === "buyVolume" ? s.buyCount : s.saleCount} trades
                     </div>
                 </div>
             );
+            /*
             case "stratBuy24hVol":
             case "stratSell24hVol": return (
                 <div className="flex flex-col">
@@ -394,10 +404,49 @@ export default function StrategyDashboard(): JSX.Element {
                         {fmtEth(s[colId])}
                     </div>
                     <div className="text-[10px] text-gray-400 font-medium">
-                        {colId === "stratBuy24hVol" ? s.stratBuy24h : s.stratSell24h} txns
+                        {colId === "stratBuy24hVol" ? s.stratBuy24h : s.stratSell24h} trades
                     </div>
                 </div>
             );
+            case "stratBuy7dVol":
+            case "stratSell7dVol": return (
+                <div className="flex flex-col">
+                    <div className={`font-bold font-mono ${colId === "stratBuy7dVol" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                        {fmtEth(s[colId])}
+                    </div>
+                    <div className="text-[10px] text-gray-400 font-medium">
+                        {colId === "stratBuy7dVol" ? s.stratBuy7d : s.stratSell7d} trades
+                    </div>
+                </div>
+            );*/
+            case "stratBuy24hVol":
+            case "stratSell24hVol":
+                return (
+                    <TradeVolumeCell
+                        s={s}
+                        colId={colId}
+                        fmtEth={fmtEth}
+                        volumeKey={colId} // stratBuy24hVol ou stratSell24hVol
+                        countKey={colId === "stratBuy24hVol" ? "stratBuy24h" : "stratSell24h"}
+                        title={colId === "stratBuy24hVol" ? "24h Strategy Buys" : "24h Strategy Sales"}
+                        isBuy={colId === "stratBuy24hVol"}
+                        timeframe={'24h'} // Déjà implicite mais explicite
+                    />
+                );
+            case "stratBuy7dVol":
+            case "stratSell7dVol":
+                return (
+                    <TradeVolumeCell
+                        s={s}
+                        colId={colId}
+                        fmtEth={fmtEth}
+                        volumeKey={colId} // stratBuy7dVol ou stratSell7dVol
+                        countKey={colId === "stratBuy7dVol" ? "stratBuy7d" : "stratSell7d"}
+                        title={colId === "stratBuy7dVol" ? "7d Strategy Buys" : "7d Strategy Sales"}
+                        isBuy={colId === "stratBuy7dVol"}
+                        timeframe={'7d'} // Déjà implicite mais explicite
+                    />
+                );
             case "realizedPnL": return (
                 <div className={`font-bold font-mono ${s.realizedPnLEth > 0 ? "text-emerald-600 dark:text-emerald-400" : s.realizedPnLEth < 0 ? "text-rose-600 dark:text-rose-400" : "text-gray-500"}`}>
                     {s.realizedPnLEth > 0 ? "+" : ""}{fmtEth(s.realizedPnLEth)}
@@ -405,7 +454,7 @@ export default function StrategyDashboard(): JSX.Element {
             );
             case "treasury": return (
                 <div className="flex flex-col">
-                    <div className="font-bold text-blue-700 dark:text-blue-400 font-mono">{fmtUSD(s.treasuryValueUsd)}</div>
+                    <div className="font-bold text-blue-700 dark:text-blue-400 font-mono">{fmtUSD(s.treasuryValueUsd,1)}</div>
                     <div className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1 font-medium bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded w-fit">
                         {s.inventoryCount || 0} NFTs
                     </div>
