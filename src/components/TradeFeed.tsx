@@ -127,7 +127,7 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
 
     if (isLoading) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-auto flex justify-center items-center h-48">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full  mx-auto flex justify-center items-center h-48">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                 <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">Loading Feed...</span>
             </div>
@@ -136,7 +136,7 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
 
     if (error) {
         return (
-            <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-300 p-4 rounded-lg w-full max-w-md mx-auto">
+            <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-300 p-4 rounded-lg w-full mx-auto">
                 <p className="font-bold text-sm">Error loading feed:</p>
                 <p className="text-xs">{error}</p>
             </div>
@@ -145,7 +145,7 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
 
     if (filteredData.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl text-center p-4 text-xs text-gray-500 dark:text-gray-400 w-full max-w-md mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl text-center p-4 text-xs text-gray-500 dark:text-gray-400 w-full mx-auto">
                 No trade events found for the current filters.
             </div>
         );
@@ -155,7 +155,7 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
     const PaginationControls = () => (
         
 
-    <div className="flex items-center justify-between mt-6 p-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4">
         <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
@@ -195,16 +195,16 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
 
     // 6. Main Content Rendering
     return (
-        <div className="bg-white dark:bg-gray-800 w-full max-w-md mx-auto">
+        <div className=" w-full mx-auto ">
         
-            <ul className="space-y-3">
+            <ul className="">
                 {currentData.map((item) => {
                     const txUrl = getTxLink(item.tx);
                     const isBuy = item.type === 'BUY';
                     const typeColor = isBuy ? 'text-green-500 dark:text-green-400' : 'text-orange-500 dark:text-orange-400';
 
                     return (
-                        <li key={item.tx + item.tokenId} className="flex items-center space-x-2 transition duration-150 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-md">
+                        <li key={item.tx + item.tokenId} className="flex items-center space-x-2 transition duration-150 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700/50 px-4 py-2 border-b border-gray-100 dark:border-gray-800">
 
                             {/* Image (H-10 W-10) */}
                             <div className="flex-shrink-0">

@@ -74,24 +74,31 @@ const RankingWidget = ({
                     return (
                         <div
                             key={item.id || index}
-                            className={`px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${index !== sortedData.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''
+                            className={`px-4 py-2 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${index !== sortedData.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''
                                 }`}
                         >
                             {/* Left: Rank & Info */}
-                            <div className="flex items-center gap-4">
+                            
                                 <span className="text-sm font-medium text-gray-400 w-4">{index + 1}</span>
+                            <button
+                                onClick={() => navigate(`/strategy/${item.tokenAddress}`)}
+                                className="flex items-center gap-4 text-left w-full hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl  transition"
+                            >
 
                                 <div className="relative">
                                     <img
                                         src={item.collectionImage}
                                         alt={item.tokenName}
                                         className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40'; }}
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = "https://via.placeholder.com/40";
+                                        }}
                                     />
                                     <div className="absolute -bottom-1 -right-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-bold px-1 rounded border border-gray-300 dark:border-gray-600">
                                         {item.tokenSymbol}
                                     </div>
                                 </div>
+
 
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -101,7 +108,7 @@ const RankingWidget = ({
                                         {item.collectionName}
                                     </p>
                                 </div>
-                            </div>
+                            </button>
 
                             {/* Right: Value */}
                             <div className="text-right">
