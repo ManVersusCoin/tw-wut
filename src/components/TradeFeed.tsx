@@ -123,6 +123,12 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const currentData = filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
+    const totalTrades = filteredData.length;
+    const totalBuys = filteredData.filter(t => t.type === 'BUY').length;
+    const totalSells = filteredData.filter(t => t.type === 'SELL').length;
+    const totalVolume = filteredData.reduce((sum, t) => sum + t.price, 0);
+
+
     // 4. Conditional Rendering (Loader/Error/Empty State)
 
     if (isLoading) {
@@ -196,7 +202,30 @@ const TradeFeed: React.FC<TradeFeedProps> = ({
     // 6. Main Content Rendering
     return (
         <div className=" w-full mx-auto ">
-        
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-t-lg">
+                <div className="text-sm flex flex-wrap items-center gap-3">
+
+                    {/* Total trades */}
+                    <span className="px-2 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold">
+                        {totalTrades} trades
+                    </span>
+
+                    {/* Buys */}
+                    <span className="px-2 py-1 rounded-md bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-semibold">
+                        {totalBuys} buys
+                    </span>
+
+                    {/* Sells */}
+                    <span className="px-2 py-1 rounded-md bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 font-semibold">
+                        {totalSells} sells
+                    </span>
+
+                    {/* Volume total */}
+                    <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold ml-auto">
+                        {totalVolume.toFixed(2)} ETH
+                    </span>
+                </div>
+            </div>
             <ul className="">
                 {currentData.map((item) => {
                     const txUrl = getTxLink(item.tx);
