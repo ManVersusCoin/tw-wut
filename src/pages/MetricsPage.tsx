@@ -1,4 +1,4 @@
-import  { useMemo, useState, useEffect } from 'react';
+Ôªøimport  { useMemo, useState, useEffect } from 'react';
 import {
     Activity,
     Wallet,
@@ -6,7 +6,8 @@ import {
     Layers,
     ArrowUpRight,
     Coins, Table,
-    Percent
+    Percent,
+    ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 // Importation de tes utilitaires
@@ -16,89 +17,140 @@ import TradeFeed from '../components/TradeFeed';
 const PROXY = import.meta.env.VITE_TW_WUT_URL;
 const STRATEGIES_DATA_URL = `${PROXY}/strategies_summary.json`;
 
-// --- Composant GÈnÈrique : RankingWidget ---
 const RankingWidget = ({
     title,
     icon: Icon,
     data,
-    getValue,     // Fonction pour extraire la valeur brute
-    formatValue,  // Fonction pour formater la valeur principale (Gros chiffre)
+    getValue,
+    formatValue,
     sortDirection = 'desc',
-    limit = 5,
-    valueLabel = 'Value', // Peut maintenant Ítre une String OU une Fonction
-    color = 'blue'
+    valueLabel = 'Value',
+    color = 'blue',
+    itemsPerPage = 5   // üî• Remplace "limit"
 }: any) => {
 
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Logique de tri et de limite
+    // ‚ö°Ô∏è Tri de la data
     const sortedData = useMemo(() => {
         if (!data) return [];
-        const sorted = [...data].sort((a, b) => {
+        return [...data].sort((a, b) => {
             const valA = getValue(a) || 0;
             const valB = getValue(b) || 0;
             return sortDirection === 'desc' ? valB - valA : valA - valB;
         });
-        return sorted.slice(0, limit);
-    }, [data, getValue, sortDirection, limit]);
+    }, [data, getValue, sortDirection]);
 
-    // Mapping des couleurs
+    // üìÑ Pagination
+    const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+
+    const paginatedData = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return sortedData.slice(start, start + itemsPerPage);
+    }, [sortedData, currentPage, itemsPerPage]);
+
+    // üé® Couleurs ic√¥nes
     const iconColors: Record<string, string> = {
-        blue: 'text-blue-500',
-        green: 'text-green-500',
-        purple: 'text-purple-500',
-        orange: 'text-orange-500',
-        red: 'text-rose-500'
+        blue: "text-blue-500",
+        green: "text-green-500",
+        purple: "text-purple-500",
+        orange: "text-orange-500",
+        red: "text-rose-500",
     };
+
+    // üîò Composant Pagination
+    const PaginationControls = () => (
+        <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-800">
+            <button
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="
+                    flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg
+                    bg-gray-100 text-gray-800 hover:bg-gray-200
+                    dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700
+                    disabled:opacity-40 disabled:cursor-not-allowed
+                    transition-all shadow-sm hover:shadow
+                "
+            >
+                <ChevronLeft size={16} />
+                Previous
+            </button>
+
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Page <span className="font-semibold">{currentPage}</span> / {totalPages}
+            </span>
+
+            <button
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="
+                    flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg
+                    bg-gray-100 text-gray-800 hover:bg-gray-200
+                    dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700
+                    disabled:opacity-40 disabled:cursor-not-allowed
+                    transition-all shadow-sm hover:shadow
+                "
+            >
+                Next
+                <ChevronRight size={16} />
+            </button>
+        </div>
+    );
 
     return (
         <div className="bg-white bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm flex flex-col h-full">
-            {/* Header Section */}
+
+            {/* Header */}
             <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <Icon className={iconColors[color] || 'text-blue-500'} size={20} />
+                    <Icon className={iconColors[color] || "text-blue-500"} size={20} />
                     {title}
                 </h3>
             </div>
 
-            {/* List Section */}
+            {/* List */}
             <div className="p-0 flex-1">
-                {sortedData.map((item: any, index: number) => {
+                {paginatedData.map((item: any, index: number) => {
                     const rawValue = getValue(item);
-
-                    // Calcul dynamique du label si valueLabel est une fonction
-                    const labelContent = typeof valueLabel === 'function'
-                        ? valueLabel(item, rawValue)
-                        : valueLabel;
+                    const labelContent =
+                        typeof valueLabel === "function"
+                            ? valueLabel(item, rawValue)
+                            : valueLabel;
 
                     return (
                         <div
                             key={item.id || index}
-                            className={`px-4 py-2 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${index !== sortedData.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''
+                            className={`px-4 py-2 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${index !== paginatedData.length - 1
+                                    ? "border-b border-gray-100 dark:border-gray-800"
+                                    : ""
                                 }`}
                         >
-                            {/* Left: Rank & Info */}
-                            
-                                <span className="text-sm font-medium text-gray-400 w-4">{index + 1}</span>
+
+                            {/* Rank */}
+                            <span className="text-sm font-medium text-gray-400 w-4">
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                            </span>
+
+                            {/* Main button */}
                             <button
                                 onClick={() => navigate(`/strategy/${item.tokenAddress}`)}
-                                className="flex items-center gap-4 text-left w-full hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl  transition"
+                                className="flex items-center gap-4 text-left w-full rounded-xl transition"
                             >
-
                                 <div className="relative">
                                     <img
                                         src={item.collectionImage}
                                         alt={item.tokenName}
                                         className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                                         onError={(e) => {
-                                            (e.target as HTMLImageElement).src = "https://via.placeholder.com/40";
+                                            (e.target as HTMLImageElement).src =
+                                                "https://via.placeholder.com/40";
                                         }}
                                     />
                                     <div className="absolute -bottom-1 -right-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-bold px-1 rounded border border-gray-300 dark:border-gray-600">
                                         {item.tokenSymbol}
                                     </div>
                                 </div>
-
 
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -110,7 +162,7 @@ const RankingWidget = ({
                                 </div>
                             </button>
 
-                            {/* Right: Value */}
+                            {/* Right value */}
                             <div className="text-right">
                                 <p className="text-sm font-bold text-gray-900 dark:text-white font-mono">
                                     {formatValue(rawValue)}
@@ -124,15 +176,8 @@ const RankingWidget = ({
                 })}
             </div>
 
-            {/* Footer optionnel */}
-            <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-3 border-t border-gray-200 dark:border-gray-800 text-center">
-                <button
-                    onClick={() => navigate("/")}
-                    className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors font-medium"
-                >
-                    Full list
-                </button>
-            </div>
+            {/* Pagination */}
+            <PaginationControls />
         </div>
     );
 };
@@ -187,7 +232,7 @@ const MetricsPage = () => {
         }), { mcap: 0, treasury: 0, inventory: 0, volume: 0 });
     }, [strategiesData]);
 
-    // Helper pour calculer le % du total en sÈcuritÈ
+    // Helper pour calculer le % du total en s√©curit√©
     const getShareOfTotal = (val: number, total: number) => {
         if (!total || total === 0) return '0%';
         const p = (val / total) * 100;
@@ -311,7 +356,7 @@ const MetricsPage = () => {
                         </div>
 
                     </div>
-                    {/* Widget 4: Tightest Spreads -> Reste statique "Spread" (car c'est dÈj‡ un %) */}
+                    {/* Widget 4: Tightest Spreads -> Reste statique "Spread" (car c'est d√©j√† un %) */}
                     <RankingWidget
                         title="Tightest Spreads"
                         icon={Percent}
