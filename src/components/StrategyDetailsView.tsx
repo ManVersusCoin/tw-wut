@@ -15,7 +15,8 @@ import { MarketDepthVisualizer } from "./MarketDepthVisualizer";
 import { NFTActivityBlock } from './NFTActivityBlock';
 import { TreasuryBlock } from './TreasuryBlock';
 import { HoldersOverview } from './HoldersOverview';
-import { MarketSimulator } from './MarketSimulator';
+//import { MarketSimulator } from './MarketSimulator';
+import TradeFeed from './TradeFeed';
 // Utilities (fmtEth, fmtPrice, fmtUSD, etc.)
 import { fmtEth, fmtUSD, fmtPrice, fmtNum } from "../utils/format";
 import { useNavigate } from "react-router-dom";
@@ -240,7 +241,7 @@ export default function StrategyDetailView({
 
 
         {/* TOP ROW: Identity & Key Metrics */ }
-        < div className = "grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" >
+        < div className = "grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6" >
             {/* 1. Identity */ }
             < div className = "bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between" >
                 <div className="flex items-start gap-4">
@@ -253,10 +254,16 @@ export default function StrategyDetailView({
                         {/* 1. Ligne du Titre, Symbole ET Bouton '...' (utilisant justify-between) */}
                         <div className="flex justify-between items-start mb-1">
 
-                            {/* Groupe de gauche : Titre et Symbole */}
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{strategy.tokenName}</h1>
-                                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-bold border border-blue-200 dark:border-blue-800">{strategy.tokenSymbol}</span>
+                            <div className="flex flex-col">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {strategy.tokenName}
+                                </h1>
+
+                                <span
+                                    className="mt-1 inline-block bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-md text-xs font-bold border border-blue-200 dark:border-blue-800 w-fit"
+                                >
+                                    {strategy.tokenSymbol}
+                                </span>
                             </div>
 
                             {/* Groupe de droite : Bouton '...' et Dropdown (Positionnement relatif) */}
@@ -459,36 +466,54 @@ export default function StrategyDetailView({
                     </div>
                 </div>
             </div>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+                {/* Title */}
+                <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        <Activity className="text-blue-500" size={20} />
+                        NFT Trade Feed (7 last days)
+                    </h3>
+                </div>   
+            <TradeFeed
+                sourceType={strategy.tokenAddress}
+                timeframe='7d'
+                typeFilter='ALL'
+            />
+                </div>
+                <div className="md:col-span-2">
+                    <MarketDepthVisualizer
+                        market_depth_data={strategy.marketDepthData}
+                        marketDepthKPIs={strategy.marketDepthKPIs}
+                        tokenPriceUsd={parseFloat(strategy.poolData?.price_usd || '0')}
+                    />
+                </div>
+                <div className="">
+                    <NFTActivityBlock strategy={strategy} />
+                </div>
+                <div className="">
+                    <HoldersOverview strategy={strategy} />
+                </div>
         </div>
 
-        {/* NEW SECTION 1: MARKET STATS & FEES */}
+        {/* NEW SECTION 1: MARKET STATS & FEES 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
 
-            {/* Left Side: Chart (Takes up 2 columns on large screens) */}
-            <div className="xl:col-span-2">
-                <MarketDepthVisualizer
-                    market_depth_data={strategy.marketDepthData}
-                    marketDepthKPIs={strategy.marketDepthKPIs}
-                    tokenPriceUsd={parseFloat(strategy.poolData?.price_usd || '0')}
-                />
-            </div>
+            
+            
             <div className="xl:col-span-1 min-h-[600px]">
                 <MarketSimulator
                     listings={strategy.marketDepthData}
                     poolData={strategy.poolDataExt}
                     tokenSymbol={strategy.tokenSymbol}
                 />
-            </div>
-            </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="flex flex-col h-full">
-                <NFTActivityBlock strategy={strategy} />
-            </div>
-            <div className="flex flex-col h-full">
-                <HoldersOverview strategy={strategy} />
-            </div>
-        </div>
+                </div>
             
+         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
+        </div>
+        */}
     </div >
     );
 }
