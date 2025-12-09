@@ -17,6 +17,8 @@ import TradeFeed from '../components/TradeFeed';
 const PROXY = import.meta.env.VITE_TW_WUT_URL;
 const STRATEGIES_DATA_URL = `${PROXY}/strategies_summary.json`;
 
+
+
 const RankingWidget = ({
     title,
     icon: Icon,
@@ -181,6 +183,19 @@ const RankingWidget = ({
         </div>
     );
 };
+// Définir cette fonction dans le même scope que le composant qui appelle RankingWidget.
+const getConditionalPnkstrValue = (item: any): number => {
+    // Condition d'identification :
+    const isPnkstrStrategy = item.tokenSymbol === "PNKSTR";
+
+    if (isPnkstrStrategy) {
+        // Si PNKSTR : on prend item.saleVolume
+        return item.saleVolume ? parseFloat(item.saleVolume) : 0;
+    } else {
+        // Sinon : on prend item.feesPnkstr
+        return item.feesPnkstr ? parseFloat(item.feesPnkstr) : 0;
+    }
+};
 
 // --- Composant Carte Globale ---
 const StatCard = ({ title, value, subValue, icon: Icon }: any) => (
@@ -221,16 +236,37 @@ const MetricsPage = () => {
         fetchData();
     }, []);
 
+
+
     // 2. Calcul des Global Stats
     const totals = useMemo(() => {
-        if (!strategiesData.length) return { mcap: 0, treasury: 0, inventory: 0, volume: 0 };
-        return strategiesData.reduce((acc, curr) => ({
-            mcap: acc.mcap + (curr.market_cap_usd || 0),
-            treasury: acc.treasury + (curr.treasuryValueUsd || 0),
-            inventory: acc.inventory + (curr.inventoryCount || 0),
-            volume: acc.volume + (curr.volume24h ? parseFloat(curr.volume24h) : 0)
-        }), { mcap: 0, treasury: 0, inventory: 0, volume: 0 });
+        if (!strategiesData.length) return { mcap: 0, treasury: 0, inventory: 0, volume: 0, pnkstrRelevantTotal: 0 };
+
+        // Initialisation des totaux
+        let pnkstrRelevantTotal = 0;
+
+        const reducedTotals = strategiesData.reduce((acc, curr) => {
+            // Accumuler la nouvelle valeur conditionnelle
+            pnkstrRelevantTotal += getConditionalPnkstrValue(curr);
+
+            // Logique existante (mise à jour pour la clarté)
+            return {
+                mcap: acc.mcap + (curr.market_cap_usd || 0),
+                treasury: acc.treasury + (curr.treasuryValueUsd || 0),
+                inventory: acc.inventory + (curr.inventoryCount || 0),
+                volume: acc.volume + (curr.volume24h ? parseFloat(curr.volume24h) : 0),
+                feesPnkstr: acc.feesPnkstr + (curr.feesPnkstr ? parseFloat(curr.feesPnkstr) : 0)
+            };
+        }, { mcap: 0, treasury: 0, inventory: 0, volume: 0, feesPnkstr: 0 }); // Note: feesPnkstr doit être initialisé ici si vous l'utilisez plus tard
+
+        // Retourner tous les totaux, y compris le nouveau
+        return {
+            ...reducedTotals,
+            pnkstrRelevantTotal: pnkstrRelevantTotal, // <--- NOUVEAU TOTAL
+        };
     }, [strategiesData]);
+
+   
 
     // Helper pour calculer le % du total en sécurité
     const getShareOfTotal = (val: number, total: number) => {
@@ -393,7 +429,24 @@ const MetricsPage = () => {
                         valueLabel="Change"
                         color="green"
                     />
-                    
+                    <RankingWidget
+                        // Mise à jour du titre pour refléter la nouvelle logique
+                        title="Fees collected to burn $PNKSTR"
+                        icon={Coins}
+                        data={strategiesData}
+
+                        // 1. Utiliser la fonction conditionnelle pour déterminer la valeur
+                        getValue={getConditionalPnkstrValue}
+
+                        formatValue={(val: number) => fmtEth(val, 2)}
+
+                        // 2. Utiliser le nouveau total conditionnel
+                        valueLabel={(_: any, val: number) =>
+                            getShareOfTotal(val, totals.pnkstrRelevantTotal)
+                        }
+
+                        color="green"
+                    />
                     
                 </div>
                 
