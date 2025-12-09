@@ -26,7 +26,7 @@ const RankingWidget = ({
     sortDirection = 'desc',
     valueLabel = 'Value',
     color = 'blue',
-    itemsPerPage = 5   // 🔥 Remplace "limit"
+    itemsPerPage = 6   // 🔥 Remplace "limit"
 }: any) => {
 
     const navigate = useNavigate();
