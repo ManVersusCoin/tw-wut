@@ -20,6 +20,7 @@ const PROXY = import.meta.env.VITE_TW_WUT_URL;
 const STRATEGIES_DATA_URL = `${PROXY}/strategies_summary.json`;
 const LOCAL_STORAGE_KEY = 'tw_visible_columns';
 const LOCAL_STORAGE_VIEW_KEY = 'tw_view_mode'; // New key for view mode
+const LOCAL_STORAGE_STRATEGY_IDS_KEY = 'tw_visible_strategy_ids';
 
 // --- 2. TYPES ---
 type HolderData = { count: number; distribution: Record<string, string>; };
@@ -222,6 +223,41 @@ const getInitialVisibleColumns = (): Set<ColumnId> => {
     }
     return DEFAULT_VISIBLE_SET;
 };
+const getInitialStrategyIds = (allStrategies: StrategyData[]): Set<string> => {
+    const allIds = allStrategies.map(s => s.id);
+
+    // Si la liste des stratégies est vide (problème d'API), on retourne un set vide.
+    if (allIds.length === 0) {
+        return new Set();
+    }
+
+    try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_STRATEGY_IDS_KEY);
+
+        if (!stored) {
+            console.log("store empty or null -> selecting all");
+            return new Set(allIds);
+        }
+
+        const parsed: string[] = JSON.parse(stored);
+
+        if (parsed.length === 0) {
+            console.log("stored array is empty [] -> selecting all to avoid blank page on first load");
+
+            return new Set(allIds);
+        }
+
+
+        const validIds = parsed.filter((id: string) => allIds.includes(id));
+        return new Set(validIds);
+
+    } catch (e) {
+        console.error("Error reading visible strategy IDs from localStorage:", e);
+        // En cas d'erreur de parsing, retourner par défaut TOUS les IDs
+        return new Set(allIds);
+    }
+};
+
 
 // --- HOOK: Responsive Columns (From Widget) ---
 const useResponsiveColumns = () => {
@@ -268,6 +304,8 @@ export default function StrategyDashboard(): JSX.Element {
     // Grid View specific
     const itemsPerRow = useResponsiveColumns();
 
+
+
     useEffect(() => {
         if (hasLoadedInit.current) return;
         hasLoadedInit.current = true;
@@ -290,9 +328,13 @@ export default function StrategyDashboard(): JSX.Element {
                 setStatusMessage("Loading Summary Data...");
                 const response = await fetch(STRATEGIES_DATA_URL);
                 if (!response.ok) throw new Error("Failed to load strategies summary");
+
                 const data: StrategyData[] = await response.json();
                 setStrategies(data);
-                setVisibleStrategyIds(new Set(data.map(s => s.id)));
+
+                const initialVisibleIds = getInitialStrategyIds(data);
+                setVisibleStrategyIds(initialVisibleIds);
+
                 setGlobalLoading(false);
                 setStatusMessage("");
             } catch (e) {
@@ -314,7 +356,19 @@ export default function StrategyDashboard(): JSX.Element {
         localStorage.setItem(LOCAL_STORAGE_VIEW_KEY, viewMode);
     }, [viewMode]);
 
-    const toggleStrategy = (id: string) => { const s = new Set(visibleStrategyIds); if (s.has(id)) s.delete(id); else s.add(id); setVisibleStrategyIds(s); };
+    useEffect(() => {
+        
+        if (strategies.length === 0) {
+            // console.log("Skipping localStorage save: strategies not yet loaded.");
+            return;
+        }
+
+        const idArray = Array.from(visibleStrategyIds);
+        // console.log("Saving visibleStrategyIds:", idArray);
+        localStorage.setItem(LOCAL_STORAGE_STRATEGY_IDS_KEY, JSON.stringify(idArray));
+    }, [visibleStrategyIds, strategies.length]);
+
+    //const toggleStrategy = (id: string) => { const s = new Set(visibleStrategyIds); if (s.has(id)) s.delete(id); else s.add(id); setVisibleStrategyIds(s); };
     const toggleColumn = (id: ColumnId) => { const s = new Set(visibleColumns); if (s.has(id)) s.delete(id); else s.add(id); setVisibleColumns(s); };
     const toggleGroup = (ids: ColumnId[]) => { const s = new Set(visibleColumns); const all = ids.every(id => s.has(id)); ids.forEach(id => all ? s.delete(id) : s.add(id)); setVisibleColumns(s); };
 
@@ -329,6 +383,32 @@ export default function StrategyDashboard(): JSX.Element {
             const scrollAmount = 300;
             tableContainerRef.current.scrollBy({ left: direction === "right" ? scrollAmount : -scrollAmount, behavior: "smooth" });
         }
+    };
+
+    const handleToggleAllStrategies = () => {
+        // 1. Déterminer si l'on doit sélectionner ou désélectionner tout
+        const isAllSelected = visibleStrategyIds.size === strategies.length;
+
+        let newSet: Set<string>;
+
+        if (isAllSelected) {
+            // Option 1: Désélectionner tout -> newSet sera vide
+            newSet = new Set<string>();
+        } else {
+            // Option 2: Sélectionner tout -> newSet contiendra tous les IDs
+            const allIds = strategies.map(s => s.id);
+            newSet = new Set(allIds);
+        }
+
+        // 2. Mettre à jour l'état une seule fois
+        setVisibleStrategyIds(newSet);
+    };
+
+    const toggleStrategy = (id: string) => {
+        const s = new Set(visibleStrategyIds);
+        if (s.has(id)) s.delete(id);
+        else s.add(id);
+        setVisibleStrategyIds(s);
     };
 
     const handleHideStrategy = (e: React.MouseEvent, stratId: string) => { e.stopPropagation(); toggleStrategy(stratId); };
@@ -725,7 +805,7 @@ export default function StrategyDashboard(): JSX.Element {
 
 
             <div className="relative flex-1 flex flex-col overflow-hidden">
-                {activePanel && <RightPanel mode={activePanel} onClose={() => setActivePanel(null)} strategies={strategies} visibleStrategyIds={visibleStrategyIds} toggleStrategy={toggleStrategy} visibleColumns={visibleColumns} toggleColumn={toggleColumn} toggleGroup={toggleGroup} />}
+                {activePanel && <RightPanel mode={activePanel} onClose={() => setActivePanel(null)} strategies={strategies} visibleStrategyIds={visibleStrategyIds} toggleStrategy={toggleStrategy} visibleColumns={visibleColumns} toggleColumn={toggleColumn} toggleGroup={toggleGroup} onToggleAllStrategies={handleToggleAllStrategies} />}
 
                 {/* CONDITIONAL RENDERING: TABLE VS GRID */}
                 {viewMode === "table" ? (
@@ -742,7 +822,7 @@ export default function StrategyDashboard(): JSX.Element {
                                             else { headerGroups.push({ name: col.headerGroup, colSpan: 1, cols: [col] }); }
                                         });
                                         return headerGroups.map((g, i) => (
-                                            <th key={i} colSpan={g.colSpan} className={`px-4 py-2 border-b border-r border-gray-200 dark:border-gray-700/50 text-center font-bold text-gray-600 dark:text-gray-300 ${g.name && GROUP_BG_STYLES[g.name] ? GROUP_BG_STYLES[g.name] : "bg-gray-50 dark:bg-gray-900"} ${g.cols[0].id === "strategy" ? "sticky left-0 z-40 shadow-[4px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[280px]" : ""} ${g.cols[0].id === 'actions' ? 'sticky right-0 z-40' : ''}`}>
+                                            <th key={i} colSpan={g.colSpan} className={`px-4 py-2 border-b border-r border-gray-200 dark:border-gray-700/50 text-center font-bold text-gray-600 dark:text-gray-300 ${g.name && GROUP_BG_STYLES[g.name] ? GROUP_BG_STYLES[g.name] : "bg-gray-50 dark:bg-gray-900"} ${g.cols[0].id === "strategy" ? "sticky left-0 z-40 shadow-[4px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[200px]" : ""} ${g.cols[0].id === 'actions' ? 'sticky right-0 z-40' : ''}`}>
                                                 {g.name || (g.cols[0].id === "strategy" ? "Strategy" : "")}
                                                 {g.cols[0].id === "actions" && (
                                                     <div className="flex justify-center gap-1 mt-1 ">
@@ -803,19 +883,24 @@ export default function StrategyDashboard(): JSX.Element {
                                             const bgClass = col.headerGroup ? GROUP_BG_STYLES[col.headerGroup] : "";
 
                                             if (col.id === "strategy") return (
-                                                <td key={col.id} className="px-4 py-3 bg-white dark:bg-gray-900 sticky left-0 z-20 group-hover:bg-blue-50/50 dark:group-hover:bg-gray-900 shadow-[4px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100 dark:border-gray-800 min-w-[280px]">
+                                                <td key={col.id} className="px-4 py-3 bg-white dark:bg-gray-900 sticky left-0 z-20 group-hover:bg-blue-50/50 dark:group-hover:bg-gray-900 shadow-[4px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100 dark:border-gray-800 min-w-[200px]">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="relative">
+
+                                                        {/* Début de la modification : Utilisation de flex-col pour mettre le ticker sous l'image */}
+                                                        <div className="flex flex-col items-center gap-1">
                                                             <img
                                                                 src={s.collectionImage}
                                                                 alt={s.tokenName}
                                                                 className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                                                                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40'; }}
                                                             />
-                                                            <div className="absolute -bottom-1 -right-1 bg-gray-100 dark:bg-gray-800 text-[10px] font-bold px-1 rounded border border-gray-300 dark:border-gray-600">
+                                                            {/* Le ticker est maintenant en dessous, centré */}
+                                                            <div className="bg-gray-100 dark:bg-gray-800 text-[10px] font-bold px-1 py-0.5 rounded border border-gray-300 dark:border-gray-600">
                                                                 {s.tokenSymbol}
                                                             </div>
                                                         </div>
+                                                        {/* Fin de la modification */}
+
                                                         <div>
                                                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{s.tokenName}</p>
                                                             <p className="text-xs text-gray-500 dark:text-gray-400">{s.collectionName}</p>
@@ -826,7 +911,6 @@ export default function StrategyDashboard(): JSX.Element {
                                                     </div>
                                                 </td>
                                             );
-
                                             if (col.id === "actions")
                                                 return (
                                                     <td key={col.id} className="px-4 py-3 text-center sticky right-0 bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 z-20 group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20">
@@ -897,21 +981,24 @@ const ScrollbarStyles = () => (
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(156, 163, 175, 0.5); border-radius: 3px; }
     `}} />
 );
-
 function RightPanel({
     mode, onClose, strategies, visibleStrategyIds, toggleStrategy,
-    visibleColumns, toggleColumn, toggleGroup
+    visibleColumns, toggleColumn, toggleGroup, onToggleAllStrategies
 }: {
     mode: "strategies" | "columns" | null;
     onClose: () => void;
     strategies: StrategyData[];
     visibleStrategyIds: Set<string>;
     toggleStrategy: (id: string) => void;
+
     visibleColumns: Set<ColumnId>;
     toggleColumn: (id: ColumnId) => void;
     toggleGroup: (ids: ColumnId[]) => void;
+    onToggleAllStrategies: () => void;
 }) {
     const sidebarRef = useRef<HTMLDivElement>(null);
+
+    // Handle click outside to close
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             const target = event.target as HTMLElement;
@@ -923,6 +1010,8 @@ function RightPanel({
     }, [mode, onClose]);
 
     const [searchTerm, setSearchTerm] = useState("");
+
+    // Memoize column grouping to avoid recalculation on render
     const groupedCols = useMemo(() => {
         const groups: Record<string, typeof COLUMN_DEFS> = { "General": [] };
         COLUMN_DEFS.forEach(col => {
@@ -933,7 +1022,25 @@ function RightPanel({
         });
         return groups;
     }, []);
-    const filteredStrategies = strategies.filter(s => s.tokenSymbol.toLowerCase().includes(searchTerm.toLowerCase()) || s.collectionName.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // FIX & IMPROVEMENT: Sort by MarketCap AND Safe Search
+    const filteredStrategies = useMemo(() => {
+        // 1. Sort strategies by Market Cap (High to Low)
+        const sorted = [...strategies].sort((a, b) =>
+            (b.market_cap_usd || 0) - (a.market_cap_usd || 0)
+        );
+
+        // 2. Filter based on search term (with safety checks)
+        if (!searchTerm) return sorted;
+
+        const lowerTerm = searchTerm.toLowerCase();
+
+        return sorted.filter(s => {
+            const symbol = (s.tokenSymbol || "").toLowerCase();
+            const name = (s.collectionName || "").toLowerCase();
+            return symbol.includes(lowerTerm) || name.includes(lowerTerm);
+        });
+    }, [strategies, searchTerm]);
 
     return (
         <aside ref={sidebarRef} className={`absolute top-0 right-0 h-full bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col shadow-2xl z-[90] transition-transform duration-300 ease-in-out w-72 ${mode ? "translate-x-0" : "translate-x-full"}`}>
@@ -944,16 +1051,63 @@ function RightPanel({
                 </div>
                 <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-md"><PanelLeftClose className="rotate-180" size={18} /></button>
             </div>
+
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
                 {mode === "strategies" && (
-                    <div>
-                        <div className="flex items-center justify-between mb-2"><h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Visibility Control</h3><button onClick={() => visibleStrategyIds.size === strategies.length ? strategies.forEach(s => toggleStrategy(s.id)) : strategies.forEach(s => { if (!visibleStrategyIds.has(s.id)) toggleStrategy(s.id) })} className="text-[10px] text-blue-500 hover:underline">{visibleStrategyIds.size === strategies.length ? "Unselect All" : "Select All"}</button></div>
-                        <div className="relative mb-2"><Search size={14} className="absolute left-2 top-2 text-gray-400" /><input type="text" placeholder="Search..." className="w-full pl-8 pr-2 py-1.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
-                        <div className="space-y-1 max-h-[70vh] overflow-y-auto custom-scrollbar pr-1">
-                            {filteredStrategies.map(s => (<div key={s.id} onClick={() => toggleStrategy(s.id)} className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-sm ${visibleStrategyIds.has(s.id) ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"}`}><div className={`w-4 h-4 border rounded flex items-center justify-center flex-shrink-0 ${visibleStrategyIds.has(s.id) ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-600"}`}>{visibleStrategyIds.has(s.id) && <Check size={10} className="text-white" />}</div><img src={s.collectionImage} className="w-5 h-5 rounded-full object-cover" alt="" /><span className="truncate">{s.tokenSymbol}</span></div>))}
+                    <div className="flex flex-col h-full">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Visibility Control</h3>
+                            <button
+                                onClick={onToggleAllStrategies}
+                                className="text-[10px] text-blue-500 hover:underline"
+                            >
+                                {visibleStrategyIds.size === strategies.length ? "Unselect All" : "Select All"}
+                            </button>
+                        </div>
+
+                        <div className="relative mb-3 shrink-0">
+                            <Search size={14} className="absolute left-2 top-2.5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search symbol or collection..."
+                                className="w-full pl-8 pr-2 py-1.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="space-y-1 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-0">
+                            {filteredStrategies.map(s => (
+                                <div
+                                    key={s.id}
+                                    onClick={() => toggleStrategy(s.id)}
+                                    className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-colors text-sm ${visibleStrategyIds.has(s.id) ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"}`}
+                                >
+                                    <div className={`w-4 h-4 border rounded flex items-center justify-center flex-shrink-0 ${visibleStrategyIds.has(s.id) ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-600"}`}>
+                                        {visibleStrategyIds.has(s.id) && <Check size={10} className="text-white" />}
+                                    </div>
+                                    <img
+                                        src={s.collectionImage}
+                                        className="w-5 h-5 rounded-full object-cover bg-gray-200"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/20'; }}
+                                        alt=""
+                                    />
+                                    <div className="flex flex-col overflow-hidden">
+                                        <span className="truncate font-medium leading-none">{s.tokenSymbol}</span>
+                                        {/* Added Market Cap display for better context */}
+                                        <span className="text-[10px] text-gray-400 leading-none mt-1">
+                                            {s.market_cap_usd ? fmtUSD(s.market_cap_usd) : "-"}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                            {filteredStrategies.length === 0 && (
+                                <div className="text-center text-gray-400 text-xs py-4">No strategies found</div>
+                            )}
                         </div>
                     </div>
                 )}
+
                 {mode === "columns" && (
                     <div>
                         <div className="flex items-center justify-between mb-3"><h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider">Configure Grid</h3></div>
