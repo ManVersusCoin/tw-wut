@@ -127,7 +127,7 @@ export const StrategyFeesAndPnL: React.FC<StrategyFeesAndPnLProps> = ({
             .then((data) => setBestNftImage(data.image || data.image_url || null))
             .catch(() => setBestNftImage(null));
     }, [metrics.bestPnL?.tokenId, strategy.collection]);
-
+    const pnl = strategy.realizedPnLEth ?? 0;
 
     return (
         
@@ -165,8 +165,8 @@ export const StrategyFeesAndPnL: React.FC<StrategyFeesAndPnLProps> = ({
             {/* P&L Section */ }
             <div className="flex justify-between items-start gap-4">
                 <div>
-                    <div className={`text-3xl font-bold ${strategy.realizedPnLEth >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {fmtEth(strategy.realizedPnLEth)}
+                    <div className={`text-3xl font-bold ${pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {fmtEth(pnl)}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">Total Realized P&L</div>
                 </div>
