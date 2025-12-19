@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useMemo, useEffect, useState } from "react";
-import { Wallet, TrendingUp, Coins, Layers, Activity } from 'lucide-react';
-import { fmtEth, fmtUSD } from "../utils/format";
+import { Coins,  Activity } from 'lucide-react';
+import { fmtEth} from "../utils/format";
 import { Trophy } from 'lucide-react';
 // --- Types ---
 export interface StrategyFeesAndPnLData {
