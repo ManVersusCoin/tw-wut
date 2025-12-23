@@ -191,7 +191,7 @@ export default function StrategyDetailView({
                                     >
                                         {/* Lien 1 */}
                                         <a
-                                            href={`https://nftstrategy.fun/strategies/${strategy.tokenAddress}`}
+                                                href={`https://nftstrategy.fun/strategies/${strategy.tokenAddress.toLowerCase()}`}
                                             target="_blank"
                                             className="flex items-center gap-2 p-2 text-sm text-gray-700 dark:text-gray-200 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full"
                                         >
