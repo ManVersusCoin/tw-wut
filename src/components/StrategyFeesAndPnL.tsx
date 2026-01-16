@@ -29,11 +29,13 @@ export interface StrategyFeesAndPnLData {
 
 interface StrategyFeesAndPnLProps {
     strategy: StrategyFeesAndPnLData;
+    tokenSymbol?: string;
+    collectionImage?: string;
 }
 const PROXY = import.meta.env.VITE_TW_PROXY_URL || "";
 
 export const StrategyFeesAndPnL: React.FC<StrategyFeesAndPnLProps> = ({
-    strategy
+    strategy, tokenSymbol, collectionImage
 }) => {
 
 
@@ -133,12 +135,34 @@ export const StrategyFeesAndPnL: React.FC<StrategyFeesAndPnLProps> = ({
         
         < div className = "bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm" >
             {/* Title */ }
-            < div className = "bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between" >
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <Activity className="text-blue-500" size={20} />
-                    Fees & PNL
-                </h3>
-                </div >
+        
+                <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-start gap-2 shrink-0">
+                    <div>
+                        <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-white">
+                            <Activity className="w-5 h-5 text-indigo-500" />
+                            Fees & PnL
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">Lifetime collected fees from trading volume</p>
+                    </div>
+                    {/* --- Strategy Branding --- */}
+                    <div className="flex items-center gap-3 pl-6 border-l border-gray-200 dark:border-gray-700">
+                        <div className="flex flex-col items-end">
+                            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Strategy</span>
+                            <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{tokenSymbol}</span>
+                        </div>
+                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400">
+                            {collectionImage && (
+                                <img
+                                    src={collectionImage}
+                                    alt=""
+                                    className="object-cover"
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                </div>
+                
                 {/* Fees Section */ }
                 < div className = "p-6 grid grid-cols-1 gap-6" >
                     <div>
@@ -163,49 +187,79 @@ export const StrategyFeesAndPnL: React.FC<StrategyFeesAndPnLProps> = ({
                     </div>
 
             {/* P&L Section */ }
-            <div className="flex justify-between items-start gap-4">
-                <div>
-                    <div className={`text-3xl font-bold ${pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        {fmtEth(pnl)}
+                <div className="flex flex-col gap-3">
+                    <div className="text-xs text-gray-400 font-bold uppercase">
+                        Trading Summary
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">Total Realized P&L</div>
-                </div>
 
-                {metrics.bestPnL && metrics.bestPnL.tradeCount > 0 && (
-                    <div className="flex flex-col items-end">
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                            <Trophy size={10} /> Best P&L NFT
-                        </span>
-                        <div className="flex items-center gap-2 mt-2">
-                            {bestNftImage && <img src={bestNftImage} className="w-20 h-20 rounded border border-gray-200" />}
-                            <div className="text-right">
-                                <div className="text-sm font-bold text-green-600">+{metrics.bestPnL.totalProfitEth.toFixed(2)}Ξ</div>
-                                <div className="text-[10px] text-gray-400">ID #{metrics.bestPnL.tokenId}</div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                        {/* BUYS */}
+                        <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-100 dark:border-green-900/30">
+                            <div className="text-[10px] text-green-700 uppercase mb-1">Buys</div>
+                            <div className="font-bold text-sm">
+                                {fmtEth(strategy.buyVolume)}
+                            </div>
+                            <div className="text-[10px] text-gray-500">
+                                {strategy.buyCount} tx
+                            </div>
+                        </div>
+
+                        {/* SELLS */}
+                        <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-100 dark:border-red-900/30">
+                            <div className="text-[10px] text-red-700 uppercase mb-1">Sells</div>
+                            <div className="font-bold text-sm">
+                                {fmtEth(strategy.saleVolume)}
+                            </div>
+                            <div className="text-[10px] text-gray-500">
+                                {strategy.saleCount} tx
+                            </div>
+                        </div>
+
+                        {/* PnL */}
+                        <div
+                            className={`p-3 rounded border ${pnl >= 0
+                                    ? "bg-green-100/60 dark:bg-green-900/30 border-green-200 dark:border-green-800"
+                                    : "bg-red-100/60 dark:bg-red-900/30 border-red-200 dark:border-red-800"
+                                }`}
+                        >
+                            <div className="text-[10px] uppercase mb-1 text-gray-600 dark:text-gray-400">
+                                Realized PnL
+                            </div>
+                            <div
+                                className={`font-bold text-sm ${pnl >= 0 ? "text-green-700" : "text-red-700"
+                                    }`}
+                            >
+                                {fmtEth(pnl)}
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
 
-            {/* Buy / Sell Volume Section */ }
-            <div className="flex flex-col gap-2">
-                <div className="text-xs text-gray-400 font-bold uppercase">Buy / Sale Volume</div>
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded">
-                        <div className="text-xs text-green-700">Buys</div>
-                        <div className="font-bold">
-                            {fmtEth(strategy.buyVolume)} <span className="text-xs font-normal">({strategy.buyCount})</span>
+                    {/* Best NFT stays secondary */}
+                    {metrics.bestPnL && metrics.bestPnL.tradeCount > 0 && (
+                        <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                <Trophy size={10} /> Best NFT
+                            </span>
+
+                            {bestNftImage && (
+                                <img
+                                    src={bestNftImage}
+                                    className="w-10 h-10 rounded border border-gray-200"
+                                />
+                            )}
+
+                            <div className="text-right">
+                                <div className="text-sm font-bold text-green-600">
+                                    +{metrics.bestPnL.totalProfitEth.toFixed(2)}Ξ
+                                </div>
+                                <div className="text-[10px] text-gray-400">
+                                    #{metrics.bestPnL.tokenId}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                        <div className="text-xs text-red-700">Sells</div>
-                        <div className="font-bold">
-                            {fmtEth(strategy.saleVolume)} <span className="text-xs font-normal">({strategy.saleCount})</span>
-                        </div>
-                    </div>
+                    )}
                 </div>
-            </div>
-                </div >
             </div >
+        </div >
     );
 };

@@ -15,8 +15,9 @@ import { NFTActivityBlock } from './NFTActivityBlock';
 import { TreasuryBlock } from './TreasuryBlock';
 import { StrategyFeesAndPnL } from './StrategyFeesAndPnL';
 import { HoldersOverview } from './HoldersOverview';
-import { StrategyChart } from './StrategyChart';
+import { StrategyAnalysisTable } from './StrategyAnalysisTable';
 import { MarketSimulator } from './MarketSimulator';
+import { FloorImpactTable } from './FloorImpactTable';
 import TradeFeed from './TradeFeed';
 // Utilities (fmtEth, fmtPrice, fmtUSD, etc.)
 import { fmtUSD, fmtPrice, fmtNum } from "../utils/format";
@@ -296,7 +297,9 @@ export default function StrategyDetailView({
             />
                 
             <StrategyFeesAndPnL 
-                strategy={strategy}
+                    strategy={strategy}
+                    tokenSymbol={strategy.tokenSymbol}
+                    collectionImage={strategy?.collectionImage}
             />
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
@@ -329,29 +332,64 @@ export default function StrategyDetailView({
             </div>
 
 
-            {/* NEW SECTION 1: MARKET STATS & FEES */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-4 xxl:grid-cols-10 gap-6 mb-6">
 
-                <div className="xl:col-span-2 min-h-[500px]">
-                    <StrategyChart
-                        strategyAddress={strategy.tokenAddress}
-                        className="shadow-sm"
-                    />
-                </div>
-
-                <div className="xl:col-span-1 min-h-[600px]">
+                {/* Market Simulator */}
+                <div
+                    className="
+            order-1
+            xl:order-2
+            xl:col-span-1
+            xxl:col-span-2
+            min-h-[500px]
+        "
+                >
                     <MarketSimulator
                         listings={strategy.marketDepthData}
                         poolData={strategy.poolDataExt}
                         tokenSymbol={strategy.tokenSymbol}
+                        collectionImage={strategy?.collectionImage}
+                    />
+                </div>
+
+                {/* Strategy Analysis Table */}
+                <div
+                    className="
+            order-2
+            xl:order-1
+            xl:col-span-3
+            xxl:col-span-4
+            min-h-[500px]
+        "
+                >
+                    <StrategyAnalysisTable
+                        strategyAddress={strategy.tokenAddress}
+                        tokenSymbol={strategy.tokenSymbol}
+                        collectionImage={strategy?.collectionImage}
+                    />
+                </div>
+
+                {/* Floor Impact Table */}
+                <div
+                    className="
+            order-3
+            xl:order-3
+            xl:col-span-3
+            xxl:col-span-4
+            min-h-[500px]
+        "
+                >
+                    <FloorImpactTable
+                        listings={strategy.marketDepthData}
+                        poolData={strategy.poolDataExt}
+                        tokenSymbol={strategy.tokenSymbol}
+                        collectionImage={strategy?.collectionImage}
                     />
                 </div>
 
             </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            
-        </div>
+
         
     </div >
     );

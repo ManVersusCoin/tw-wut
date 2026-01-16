@@ -23,9 +23,12 @@ interface MarketSimulatorProps {
     listings: Listing[];
     poolData: PoolDataExt;
     tokenSymbol?: string;
+    collectionImage?: string;
 }
 
 type InputMode = 'ETH' | 'NFT' | 'FLOOR';
+const EPSILON = 0.00000001;
+
 
 const safeFloat = (val: any): number => {
     if (typeof val === 'number') return val;
@@ -38,7 +41,8 @@ const safeFloat = (val: any): number => {
 export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
     listings = [],
     poolData,
-    tokenSymbol = "TOKEN"
+    tokenSymbol = "TOKEN",
+    collectionImage = "",
 }) => {
     const [inputMode, setInputMode] = useState<InputMode>('ETH');
     const [inputValue, setInputValue] = useState<number | ''>('');
@@ -62,7 +66,7 @@ export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
                     currentCount++;
                 } else break;
             }
-            return volume;
+            return volume + (EPSILON * 2);
         }
         if (inputMode === 'FLOOR') {
             let volume = 0;
@@ -70,7 +74,7 @@ export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
                 if (listing.price <= val) volume += listing.price;
                 else break;
             }
-            return volume;
+            return volume + (EPSILON * 2);
         }
         return 0;
     }, [inputValue, inputMode, sortedListings]);
@@ -130,7 +134,7 @@ export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
             const amountOut = (amountInNet * reserveToken) / (reserveEth + amountInNet);
             const prevPriceEth = reserveEth / reserveToken;
 
-            reserveEth += amountInRaw; // Wait, usually only net is added to K in some models, but assuming standard V2 swap of net amount
+            //reserveEth += amountInRaw; // Wait, usually only net is added to K in some models, but assuming standard V2 swap of net amount
             // Correct Uniswap V2 formula logic: k = (reserveEth + amountInNet) * (reserveToken - amountOut)
             // But here we update reserves. Let's stick to the logic provided in original file or standard.
             // Original: reserveEth += amountInRaw; (This implies the fee stays in the pool? Or is separated?)
@@ -191,14 +195,31 @@ export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
                 <div className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wider rounded-md">
                     Beta / Exp
                 </div>
+                {/* --- Strategy Branding --- */}
+                <div className="flex items-center gap-3 pl-6 border-l border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col items-end">
+                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Strategy</span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{tokenSymbol}</span>
+                    </div>
+                    <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400">
+                        {collectionImage && (
+                            <img
+                                src={collectionImage}
+                                alt=""
+                                className="object-cover"
+                            />
+                        )}
+                    </div>
+                </div>
+                
             </div>
 
             <div className="p-6 flex-1 flex flex-col gap-6 overflow-hidden">
                 {/* Mode Selection */}
                 <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl grid grid-cols-3 gap-1 shrink-0">
                     {[
-                        { id: 'ETH', label: 'Inject ETH', icon: <Zap size={14} /> },
-                        { id: 'NFT', label: 'Sweep NFTs', icon: <ShoppingCart size={14} /> },
+                        { id: 'ETH', label: 'Simulate ETH Volume', icon: <Zap size={14} /> },
+                        { id: 'NFT', label: 'Simulate NFT sales', icon: <ShoppingCart size={14} /> },
                         { id: 'FLOOR', label: 'Target NFT Floor Price', icon: <Target size={14} /> }
                     ].map(mode => (
                         <button
@@ -293,7 +314,7 @@ export const MarketSimulator: React.FC<MarketSimulatorProps> = ({
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Wallet className="w-4 h-4 text-purple-600" />
-                                        <h4 className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">Collected Fees</h4>
+                                        <h4 className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">Collected Fees during the buyback process</h4>
                                     </div>
                                     
                                     <div className="grid grid-cols-3 gap-2 text-center">
