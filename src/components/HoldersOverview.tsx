@@ -6,7 +6,7 @@ interface HoldersOverviewProps {
         stratHolders: number;
         nftHolders: number;
         stratColHolderRatio?: number;
-        stratHoldersData: {
+        stratHoldersData?: {
             count: number;
             distribution: {
                 top_10: string;    // % strings
@@ -21,7 +21,7 @@ interface HoldersOverviewProps {
 export const HoldersOverview: React.FC<HoldersOverviewProps> = ({ strategy }) => {
 
 
-    const distribution = strategy.stratHoldersData.distribution;
+    const distribution = strategy.stratHoldersData?.distribution || null;
 
     return (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
@@ -38,25 +38,44 @@ export const HoldersOverview: React.FC<HoldersOverviewProps> = ({ strategy }) =>
                     <h4 className="text-sm font-bold text-gray-500 uppercase mb-4 flex items-center gap-2">
                         Token Distribution
                     </h4>
-                    <div className="space-y-3">
-                        {Object.entries(distribution).map(([key, value], i) => (
-                            <div key={i} className="flex items-center gap-3">
-                                <span className="text-xs font-mono text-gray-400 w-12">{key.replace('_', '-')}</span>
-                                <div className="flex-1">
-                                    <div className="flex justify-between text-sm mb-1">
-                                        <span className="capitalize">{key.replace('_', '-')}</span>
-                                        <span className="font-bold">{fmtPercent(value)}%</span>
-                                    </div>
-                                    <div className="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                                        <div
-                                            className="bg-purple-500 h-full"
-                                            style={{ width: `${Math.min(100, parseFloat(value))}%` }}
-                                        ></div>
+                    {distribution ? (
+                        <div className="space-y-3">
+                            {Object.entries(distribution).map(([key, value], i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <span className="text-xs font-mono text-gray-400 w-12">
+                                        {key.replace('_', '-')}
+                                    </span>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="capitalize">
+                                                {key.replace('_', '-')}
+                                            </span>
+                                            <span className="font-bold">
+                                                {fmtPercent(value)}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                                            <div
+                                                className="bg-purple-500 h-full"
+                                                style={{
+                                                    width: `${Math.min(100, parseFloat(value))}%`
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <div className="text-sm text-gray-400">
+                                Distribution data not available
                             </div>
-                        ))}
-                    </div>
+                            <div className="text-xs text-gray-300 mt-1">
+                                Holder breakdown could not be retrieved
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Holders Analysis */}

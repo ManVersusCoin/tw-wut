@@ -332,14 +332,14 @@ export default function StrategyDetailView({
             </div>
 
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 xxl:grid-cols-10 gap-6 mb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-8 xxl:grid-cols-10 gap-6 mb-6">
 
                 {/* Market Simulator */}
                 <div
                     className="
             order-1
             xl:order-2
-            xl:col-span-1
+            xl:col-span-3
             xxl:col-span-2
             min-h-[500px]
         "
@@ -357,7 +357,7 @@ export default function StrategyDetailView({
                     className="
             order-2
             xl:order-1
-            xl:col-span-3
+            xl:col-span-5
             xxl:col-span-4
             min-h-[500px]
         "
@@ -374,7 +374,7 @@ export default function StrategyDetailView({
                     className="
             order-3
             xl:order-3
-            xl:col-span-3
+            xl:col-span-8
             xxl:col-span-4
             min-h-[500px]
         "
