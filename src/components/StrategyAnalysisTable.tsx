@@ -81,7 +81,7 @@ const getPeriodKey = (date: Date, period: Period): string => {
     return `W-${monday.getUTCFullYear()}-${(monday.getUTCMonth() + 1)}-${monday.getUTCDate()}`;
 };
 
-const getPeriodLabel = (key: string, period: Period, firstDate: Date): string => {
+const getPeriodLabel = ( period: Period, firstDate: Date): string => {
     if (period === 'day') {
         return firstDate.toLocaleDateString('en-US', {
             weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'
@@ -200,7 +200,7 @@ export const StrategyAnalysisTable: React.FC<StrategyAnalysisTableProps> = ({ st
 
         // C. Finalisation (Labels, Mcap, Evolution)
         const result = Array.from(groups.values()).map(group => {
-            group.periodLabel = getPeriodLabel('', period, group.startDate);
+            group.periodLabel = getPeriodLabel( period, group.startDate);
 
             // Evolution: (Close - Open) / Open
             group.evolution = ((group.closePrice - group.openPrice) / group.openPrice) * 100;
