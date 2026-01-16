@@ -9,7 +9,10 @@ import {
     ArrowDownRight
 } from 'lucide-react';
 import { fmtNum, fmtUSD, fmtEth } from "../utils/format";
-
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid,
+    Tooltip, ResponsiveContainer, BarChart, Bar
+} from 'recharts';
 // --- Interfaces (Identiques à vos fichiers sources) ---
 
 interface RawEvent {
@@ -215,7 +218,7 @@ export const StrategyAnalysisTable: React.FC<StrategyAnalysisTableProps> = ({ st
         return result.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
 
     }, [ohlcv, rawEvents, burnStats, period]);
-
+    const chartData = useMemo(() => [...rows].reverse(), [rows]);
 
     if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">Loading analysis...</div>;
 
@@ -258,115 +261,214 @@ export const StrategyAnalysisTable: React.FC<StrategyAnalysisTableProps> = ({ st
                             <img
                                 src={collectionImage}
                                 alt=""
-                                className="object-cover"
+                                className="w-8 h-8 rounded object-cover"
                             />
                         )}
                     </div>
                 </div>
             </div>
-
-            {/* --- Table --- */}
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-100 dark:bg-gray-800/80 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-gray-200 dark:border-gray-700">
-                            <th className="px-5 py-4 w-[20%]">Period</th>
-                            <th className="px-5 py-4 w-[20%]">Volume</th>
-                            <th className="px-5 py-4 w-[20%]">Market Cap & Evo</th>
-                            <th className="px-5 py-4 w-[25%]">NFT Flow (Buy/Sell)</th>
-                            <th className="px-5 py-4 w-[15%] text-right">Burn Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {rows.map((row, idx) => (
-                            <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                                {/* 1. Period */}
-                                <td className="px-5 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
-                                            <Calendar size={16} />
-                                        </div>
-                                        <span className="font-semibold text-sm text-gray-900 dark:text-white">
-                                            {row.periodLabel}
-                                        </span>
-                                    </div>
-                                </td>
-
-                                {/* 2. Volume */}
-                                <td className="px-5 py-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900 dark:text-white">
-                                            {fmtUSD(row.volUsd)}
-                                        </span>
-                                        <span className="text-xs text-gray-500 font-mono mt-0.5">
-                                            {fmtEth(row.volEth)}
-                                        </span>
-                                    </div>
-                                </td>
-
-                                {/* 3. Market Cap & Evolution */}
-                                <td className="px-5 py-4">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-sm font-bold text-gray-900 dark:text-white">
-                                            {fmtUSD(row.mcapUsd, 2)}
-                                        </span>
-                                        <div className={`flex items-center text-xs font-bold ${row.evolution >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                            {row.evolution >= 0 ? <TrendingUp size={12} className="mr-1" /> : <TrendingDown size={12} className="mr-1" />}
-                                            {row.evolution >= 0 ? '+' : ''}{row.evolution.toFixed(2)}%
-                                        </div>
-                                    </div>
-                                </td>
-
-                                {/* 4. NFT Flow (Split Bar/Stats) */}
-                                <td className="px-5 py-4">
-                                    <div className="flex items-center gap-4">
-                                        {/* Buys */}
-                                        <div className="flex flex-col items-start">
-                                            <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase mb-0.5">
-                                                <ArrowDownRight size={12} /> {row.buyCount} Buys
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* --- Table --- */}
+                <div className="lg:col-span-3 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-100 dark:bg-gray-800/80 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-gray-200 dark:border-gray-700">
+                                <th className="px-5 py-4 w-[20%]">Period</th>
+                                <th className="px-5 py-4 w-[20%]">Volume</th>
+                                <th className="px-5 py-4 w-[20%]">Market Cap & Evo</th>
+                                <th className="px-5 py-4 w-[25%]">NFT Flow (Buy/Sell)</th>
+                                <th className="px-5 py-4 w-[15%] text-right">Burn Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            {rows.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                                    {/* 1. Period */}
+                                    <td className="px-5 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
+                                                <Calendar size={16} />
                                             </div>
-                                            <span className="text-[10px] text-gray-400 font-mono">
-                                                Vol: {fmtEth(row.buyVol)}
+                                            <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                                                {row.periodLabel}
                                             </span>
                                         </div>
+                                    </td>
 
-                                        <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
-
-                                        {/* Sells */}
-                                        <div className="flex flex-col items-start">
-                                            <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase mb-0.5">
-                                                <ArrowUpRight size={12} /> {row.sellCount} Sells
-                                            </div>
-                                            <span className="text-[10px] text-gray-400 font-mono">
-                                                Vol: {fmtEth(row.sellVol)}
+                                    {/* 2. Volume */}
+                                    <td className="px-5 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                                {fmtUSD(row.volUsd)}
+                                            </span>
+                                            <span className="text-xs text-gray-500 font-mono mt-0.5">
+                                                {fmtEth(row.volEth)}
                                             </span>
                                         </div>
-                                    </div>
-                                </td>
+                                    </td>
 
-                                {/* 5. Burn Amount */}
-                                <td className="px-5 py-4 text-right">
-                                    <div className="inline-flex flex-col items-end">
-                                        <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-500 font-bold text-sm">
-                                            <Flame size={14} className={row.burnAmount > 0 ? "animate-pulse" : ""} />
-                                            {fmtNum(row.burnAmount)}
+                                    {/* 3. Market Cap & Evolution */}
+                                    <td className="px-5 py-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                                {fmtUSD(row.mcapUsd, 2)}
+                                            </span>
+                                            <div className={`flex items-center text-xs font-bold ${row.evolution >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                {row.evolution >= 0 ? <TrendingUp size={12} className="mr-1" /> : <TrendingDown size={12} className="mr-1" />}
+                                                {row.evolution >= 0 ? '+' : ''}{row.evolution.toFixed(2)}%
+                                            </div>
                                         </div>
-                                        <span className="text-[10px] text-orange-400/60 uppercase font-bold tracking-wider">Tokens</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
 
-                        {rows.length === 0 && (
-                            <tr>
-                                <td colSpan={5} className="p-8 text-center text-gray-400 text-sm">
-                                    No data available for this period.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                    {/* 4. NFT Flow (Split Bar/Stats) */}
+                                    <td className="px-5 py-4">
+                                        <div className="flex items-center gap-4">
+                                            {/* Buys */}
+                                            <div className="flex flex-col items-start">
+                                                <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase mb-0.5">
+                                                    <ArrowDownRight size={12} /> {row.buyCount} Buys
+                                                </div>
+                                                <span className="text-[10px] text-gray-400 font-mono">
+                                                    Vol: {fmtEth(row.buyVol)}
+                                                </span>
+                                            </div>
+
+                                            <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+                                            {/* Sells */}
+                                            <div className="flex flex-col items-start">
+                                                <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase mb-0.5">
+                                                    <ArrowUpRight size={12} /> {row.sellCount} Sells
+                                                </div>
+                                                <span className="text-[10px] text-gray-400 font-mono">
+                                                    Vol: {fmtEth(row.sellVol)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    {/* 5. Burn Amount */}
+                                    <td className="px-5 py-4 text-right">
+                                        <div className="inline-flex flex-col items-end">
+                                            <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-500 font-bold text-sm">
+                                                <Flame size={14} className={row.burnAmount > 0 ? "animate-pulse" : ""} />
+                                                {fmtNum(row.burnAmount)}
+                                            </div>
+                                            <span className="text-[10px] text-orange-400/60 uppercase font-bold tracking-wider">Tokens</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+
+                            {rows.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="p-8 text-center text-gray-400 text-sm">
+                                        No data available for this period.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                {/* 2. CHARTS (25%) */}
+                <div className="lg:col-span-1 flex flex-col gap-4">
+
+                    {/* Graphique Volume */}
+                    <ChartCard title="Volume Evolution (USD)" icon={<TrendingUp size={14} />}>
+                        <ResponsiveContainer width="100%" height={120}>
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-gray-800" />
+                                <XAxis
+                                    dataKey="periodLabel"
+                                    hide
+                                />
+                                <YAxis hide domain={['auto', 'auto']} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
+                                    itemStyle={{ color: '#60a5fa' }}
+                                    labelClassName="hidden"
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="volUsd"
+                                    stroke="#3b82f6"
+                                    fillOpacity={1}
+                                    fill="url(#colorVol)"
+                                    strokeWidth={2}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+
+                    {/* Graphique Burn (Cumulé) */}
+                    <ChartCard title="Token Burn Activity" icon={<Flame size={14} />} color="text-orange-500">
+                        <ResponsiveContainer width="100%" height={120}>
+                            <BarChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-gray-800" />
+                                <XAxis dataKey="periodLabel" hide />
+                                <YAxis hide />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    itemStyle={{ color: '#fb923c' }}
+                                    labelClassName="hidden"
+                                />
+                                <Bar
+                                    dataKey="burnAmount"
+                                    fill="#f97316"
+                                    radius={[4, 4, 0, 0]}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+
+                    {/* Graphique NFT Flow (Delta Buy/Sell) */}
+                    <ChartCard title="Net NFT Flow" icon={<Layers size={14} />} color="text-purple-500">
+                        <ResponsiveContainer width="100%" height={120}>
+                            <AreaChart data={chartData}>
+                                <XAxis dataKey="periodLabel" hide />
+                                <YAxis hide />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                />
+                                <Area
+                                    type="step"
+                                    dataKey="buyCount"
+                                    stackId="1"
+                                    stroke="#22c55e"
+                                    fill="#22c55e"
+                                    fillOpacity={0.2}
+                                />
+                                <Area
+                                    type="step"
+                                    dataKey="sellCount"
+                                    stackId="2"
+                                    stroke="#ef4444"
+                                    fill="#ef4444"
+                                    fillOpacity={0.2}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+
+                </div>
+             </div>
         </div>
     );
 };
+const ChartCard = ({ title, children, icon, color = "text-blue-500" }: any) => (
+    <div className="bg-white dark:bg-gray-900 p-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+            <span className={color}>{icon}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                {title}
+            </span>
+        </div>
+        {children}
+    </div>
+);

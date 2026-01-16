@@ -338,7 +338,7 @@ export default function StrategyDetailView({
                 <div
                     className="
             order-1
-            xl:order-2
+            xl:order-3
             xl:col-span-3
             xxl:col-span-2
             min-h-[500px]
@@ -355,9 +355,27 @@ export default function StrategyDetailView({
                 {/* Strategy Analysis Table */}
                 <div
                     className="
+            order-3
+            xl:order-2
+            xl:col-span-5
+            xxl:col-span-4
+            min-h-[500px]
+        "
+                ><FloorImpactTable
+                        listings={strategy.marketDepthData}
+                        poolData={strategy.poolDataExt}
+                        tokenSymbol={strategy.tokenSymbol}
+                        collectionImage={strategy?.collectionImage}
+                    />
+                    
+                </div>
+
+                {/* Floor Impact Table */}
+                <div
+                    className="
             order-2
             xl:order-1
-            xl:col-span-5
+            xl:col-span-8
             xxl:col-span-4
             min-h-[500px]
         "
@@ -367,24 +385,7 @@ export default function StrategyDetailView({
                         tokenSymbol={strategy.tokenSymbol}
                         collectionImage={strategy?.collectionImage}
                     />
-                </div>
-
-                {/* Floor Impact Table */}
-                <div
-                    className="
-            order-3
-            xl:order-3
-            xl:col-span-8
-            xxl:col-span-4
-            min-h-[500px]
-        "
-                >
-                    <FloorImpactTable
-                        listings={strategy.marketDepthData}
-                        poolData={strategy.poolDataExt}
-                        tokenSymbol={strategy.tokenSymbol}
-                        collectionImage={strategy?.collectionImage}
-                    />
+                    
                 </div>
 
             </div>

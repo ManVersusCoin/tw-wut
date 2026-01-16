@@ -393,7 +393,7 @@ export const FloorImpactTable: React.FC<FloorImpactTableProps> = ({
                             <img
                                 src={collectionImage}
                                 alt=""
-                                className="object-cover"
+                                className="w-8 h-8 rounded object-cover"
                             />
                         )}
                     </div>
